@@ -6,7 +6,7 @@ import { authenticateToken } from '../middleware/auth.js';
 const router = express.Router();
 
 // GET /api/rooms - Get all rooms with their types
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { data: rooms, error } = await supabase
       .from('rooms')
@@ -33,7 +33,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // GET /api/rooms/types - Get all room types
-router.get('/types', authenticateToken, async (req, res) => {
+router.get('/types', async (req, res) => {
   try {
     const { data: types, error } = await supabase
       .from('room_types')

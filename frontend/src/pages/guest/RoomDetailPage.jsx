@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ROOM_TYPES } from '../../lib/api';
+import { useData } from '../../contexts/DataContext';
 import { 
   ChevronLeft, ChevronRight, Check, Users, Maximize2, 
   BedDouble, ArrowRight, X 
@@ -8,7 +8,8 @@ import {
 
 export default function RoomDetailPage() {
   const { slug } = useParams();
-  const room = ROOM_TYPES.find(r => r.slug === slug);
+  const { roomTypes } = useData();
+  const room = roomTypes.find(r => r.slug === slug);
   const [currentImage, setCurrentImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -21,7 +22,7 @@ export default function RoomDetailPage() {
     );
   }
 
-  const otherRooms = ROOM_TYPES.filter(r => r.id !== room.id).slice(0, 3);
+  const otherRooms = roomTypes.filter(r => r.id !== room.id).slice(0, 3);
 
   function nextImage() {
     setCurrentImage(prev => (prev + 1) % room.images.length);

@@ -137,6 +137,7 @@ export function DataProvider({ children }) {
   const location = useLocation();
   const [bookings, setBookings] = useState(() => loadFromStorage(LS_BOOKINGS, INITIAL_BOOKINGS));
   const [rooms, setRooms] = useState(() => loadFromStorage(LS_ROOMS, INITIAL_ROOMS));
+  const [roomTypes, setRoomTypes] = useState(ROOM_TYPES);
   const [guests, setGuests] = useState(() => loadFromStorage(LS_GUESTS, INITIAL_GUESTS));
   const [notifications, setNotifications] = useState(() => loadFromStorage(LS_NOTIFICATIONS, []));
   const [pricingRules, setPricingRules] = useState(() => loadFromStorage(LS_PRICING_RULES, INITIAL_RULES));
@@ -185,6 +186,7 @@ export function DataProvider({ children }) {
             featured: !!rt.featured,
             active: !!rt.active
           }));
+          setRoomTypes(normalizedTypes);
         }
 
         if (dbRooms && normalizedTypes.length > 0) {
@@ -1017,7 +1019,7 @@ export function DataProvider({ children }) {
   const value = {
     // Data
     bookings, rooms, guests, notifications, toasts,
-    roomTypes: ROOM_TYPES, specialOffers,
+    roomTypes, specialOffers,
     pricingRules, users,
     unacknowledgedBookings,
     expenses,

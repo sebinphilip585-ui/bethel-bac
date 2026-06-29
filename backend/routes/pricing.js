@@ -77,7 +77,7 @@ router.delete('/rules/:id', authenticateToken, async (req, res) => {
 });
 
 // GET /api/pricing/offers - Get all special offers
-router.get('/offers', authenticateToken, async (req, res) => {
+router.get('/offers', async (req, res) => {
   try {
     const { data: offers, error } = await supabase
       .from('special_offers')

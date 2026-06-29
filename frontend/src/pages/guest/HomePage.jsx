@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ROOM_TYPES, SPECIAL_OFFERS } from '../../lib/api';
+import { SPECIAL_OFFERS } from '../../lib/api';
+import { useData } from '../../contexts/DataContext';
 import { 
   Star, Wifi, Car, Coffee, Shield, MapPin, ArrowRight, 
   Calendar, Users, ChevronRight, Quote, Sparkles, Phone, ShieldCheck, Heart
@@ -23,7 +24,8 @@ function useReveal() {
 export default function HomePage() {
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
-  const [guests, setGuests] = useState('2');
+  const [guests, setGuests] = useState(2);
+  const { roomTypes } = useData();
   const [currentHeroImg, setCurrentHeroImg] = useState(0);
   const containerRef = useReveal();
   const navigate = useNavigate();
@@ -361,7 +363,7 @@ export default function HomePage() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
             gap: 'var(--space-8)'
           }}>
-            {ROOM_TYPES.filter(rt => rt.featured).map((room, i) => (
+            {roomTypes.filter(rt => rt.featured).map((room, i) => (
               <div key={room.id} className="room-card reveal premium-hover-card" style={{ 
                 background: 'var(--color-white)',
                 border: '1px solid rgba(197, 164, 109, 0.15)',

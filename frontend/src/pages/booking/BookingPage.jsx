@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ROOM_TYPES, ROOMS, calculateDynamicPrice } from '../../lib/api';
+import { ROOMS, calculateDynamicPrice } from '../../lib/api';
 import { useData } from '../../contexts/DataContext';
 import { format, differenceInDays, addDays } from 'date-fns';
 import {
@@ -11,7 +11,7 @@ import {
 const STEPS = ['Search', 'Select Room', 'Guest Details', 'Confirm'];
 
 export default function BookingPage() {
-  const { createBooking, isRoomTypeAvailable, specialOffers } = useData();
+  const { createBooking, isRoomTypeAvailable, specialOffers, roomTypes } = useData();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -22,7 +22,7 @@ export default function BookingPage() {
     checkOutTime: '11:00',
     guests: parseInt(searchParams.get('guests')) || 2,
     selectedRoom: null,
-    selectedRoomType: searchParams.get('room') ? ROOM_TYPES.find(rt => rt.id === searchParams.get('room')) : null,
+    selectedRoomType: searchParams.get('room') ? roomTypes.find(rt => rt.id === searchParams.get('room')) : null,
     guestName: '',
     guestEmail: '',
     guestPhone: '',
@@ -335,7 +335,7 @@ export default function BookingPage() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-                {ROOM_TYPES.filter(rt => rt.max_guests >= booking.guests).map(rt => {
+                {roomTypes.filter(rt => rt.max_guests >= booking.guests).map(rt => {
                   const isAvailable = booking.checkIn && booking.checkOut
                     ? isRoomTypeAvailable(rt.id, booking.checkIn, booking.checkOut)
                     : true;

@@ -1,8 +1,11 @@
-import { Link } from 'react-router-dom';
-import { ROOM_TYPES } from '../../lib/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { useData } from '../../contexts/DataContext';
 import { Wifi, Coffee, Shield, Star, Users, Maximize2, ArrowRight } from 'lucide-react';
 
 export default function RoomsPage() {
+  const { roomTypes } = useData();
+  const navigate = useNavigate();
+
   return (
     <>
       {/* Header */}
@@ -23,7 +26,7 @@ export default function RoomsPage() {
       {/* Room Showcases — alternating layout */}
       <section className="section-lg">
         <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-12)' }}>
-          {ROOM_TYPES.map((room, i) => (
+          {roomTypes.map((room, i) => (
             <div key={room.id} className={`room-showcase ${i % 2 === 1 ? 'reversed' : ''}`}>
               <div className="room-showcase-img">
                 <img src={room.images[0]} alt={room.name} />
