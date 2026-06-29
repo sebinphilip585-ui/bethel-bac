@@ -53,11 +53,11 @@ router.get('/types', async (req, res) => {
 router.post('/types', authenticateToken, async (req, res) => {
   try {
     const { name, description, base_price, capacity, size, bed_type, facilities } = req.body;
-    
+
     const { data: newType, error } = await supabase
       .from('room_types')
       .insert([{
-        name, description, base_price, capacity, size, bed_type, 
+        name, description, base_price, capacity, size, bed_type,
         facilities: facilities || []
       }])
       .select()
@@ -75,7 +75,7 @@ router.post('/types', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { room_number, room_type_id, floor } = req.body;
-    
+
     // Check existing
     const { data: existing } = await supabase
       .from('rooms')
@@ -97,7 +97,7 @@ router.post('/', authenticateToken, async (req, res) => {
       .single();
 
     if (insertError) throw insertError;
-    
+
     newRoom.room_type = newRoom.room_types;
     res.status(201).json(newRoom);
   } catch (err) {
