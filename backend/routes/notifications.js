@@ -1,6 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
-import { query } from '../../database/db.js';
+import { query } from '../database/db.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
