@@ -18,6 +18,8 @@ export default function BookingPage() {
   const [booking, setBooking] = useState({
     checkIn: searchParams.get('checkIn') || '',
     checkOut: searchParams.get('checkOut') || '',
+    checkInTime: '14:00',
+    checkOutTime: '11:00',
     guests: parseInt(searchParams.get('guests')) || 2,
     selectedRoom: null,
     selectedRoomType: searchParams.get('room') ? ROOM_TYPES.find(rt => rt.id === searchParams.get('room')) : null,
@@ -135,6 +137,8 @@ export default function BookingPage() {
         roomTypeId: booking.selectedRoomType.id,
         checkIn: reqCheckIn,
         checkOut: reqCheckOut,
+        checkInTime: booking.checkInTime,
+        checkOutTime: booking.checkOutTime,
         guests: booking.guests,
         guestName: booking.guestName,
         guestEmail: booking.guestEmail,
@@ -156,6 +160,8 @@ export default function BookingPage() {
           roomType: booking.selectedRoomType.name,
           checkIn: reqCheckIn,
           checkOut: reqCheckOut,
+          checkInTime: booking.checkInTime,
+          checkOutTime: booking.checkOutTime,
           nights: result.nights,
           guests: booking.guests,
           guestName: booking.guestName,
@@ -239,30 +245,48 @@ export default function BookingPage() {
                     <div className="form-group">
                       <label className="form-label">
                         <Calendar size={14} style={{ display: 'inline', marginRight: '4px' }} />
-                        Check-in Date
+                        Check-in
                       </label>
-                      <input
-                        type="date"
-                        className="form-input"
-                        value={booking.checkIn}
-                        onChange={e => setBooking(prev => ({ ...prev, checkIn: e.target.value }))}
-                        min={today}
-                        required
-                      />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                          type="date"
+                          className="form-input"
+                          value={booking.checkIn}
+                          onChange={e => setBooking(prev => ({ ...prev, checkIn: e.target.value }))}
+                          min={today}
+                          required
+                        />
+                        <input
+                          type="time"
+                          className="form-input"
+                          value={booking.checkInTime}
+                          onChange={e => setBooking(prev => ({ ...prev, checkInTime: e.target.value }))}
+                          required
+                        />
+                      </div>
                     </div>
                     <div className="form-group">
                       <label className="form-label">
                         <Calendar size={14} style={{ display: 'inline', marginRight: '4px' }} />
-                        Check-out Date
+                        Check-out
                       </label>
-                      <input
-                        type="date"
-                        className="form-input"
-                        value={booking.checkOut}
-                        onChange={e => setBooking(prev => ({ ...prev, checkOut: e.target.value }))}
-                        min={booking.checkIn || today}
-                        required
-                      />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                          type="date"
+                          className="form-input"
+                          value={booking.checkOut}
+                          onChange={e => setBooking(prev => ({ ...prev, checkOut: e.target.value }))}
+                          min={booking.checkIn || today}
+                          required
+                        />
+                        <input
+                          type="time"
+                          className="form-input"
+                          value={booking.checkOutTime}
+                          onChange={e => setBooking(prev => ({ ...prev, checkOutTime: e.target.value }))}
+                          required
+                        />
+                      </div>
                     </div>
                     <div className="form-group">
                       <label className="form-label">

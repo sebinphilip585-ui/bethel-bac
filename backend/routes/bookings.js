@@ -117,7 +117,7 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', async (req, res) => {
   const {
     guestName, guestEmail, guestPhone, guestIdType, guestIdNumber,
-    roomTypeId, checkIn, checkOut, guests, totalAmount, amountPaid,
+    roomTypeId, checkIn, checkOut, checkInTime, checkOutTime, guests, totalAmount, amountPaid,
     paymentStatus, paymentMethod, paymentSource, specialRequests, notes
   } = req.body;
 
@@ -198,7 +198,7 @@ router.post('/', async (req, res) => {
       .from('bookings')
       .insert([{
         guest_id: guestId, room_id: assignedRoomId, room_type_id: roomTypeId,
-        check_in: checkIn, check_out: checkOut, guests_count: parseInt(guests) || 1,
+        check_in: checkIn, check_in_time: checkInTime || null, check_out: checkOut, check_out_time: checkOutTime || null, guests_count: parseInt(guests) || 1,
         total_amount: finalTotalAmount, amount_paid: finalAmountPaid,
         payment_status: pStatus, payment_method: paymentMethod || null, payment_source: paymentSource || null,
         special_requests: specialRequests || null, notes: notes || null,
