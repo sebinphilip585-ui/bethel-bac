@@ -1,6 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
-import { query } from '../database/db.js';
+import { supabase } from '../database/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -8,13 +8,20 @@ const router = express.Router();
 // GET /api/expenses - List all expenses
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const expenses = await query.all(`
-      SELECT e.*, p.name as creator_name
-      FROM expenses e
-      LEFT JOIN profiles p ON e.created_by = p.id
-      ORDER BY e.date DESC, e.created_at DESC
-    `);
-    res.json(expenses);
+    const { data: expenses, error } = await supabase
+      .from('expenses')
+      .select('*, profiles(name)')
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const formatted = expenses.map(e => ({
+      ...e,
+      creator_name: e.profiles ? e.profiles.name : null
+    }));
+
+    res.json(formatted);
   } catch (err) {
     console.error('Error fetching expenses:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -25,38 +32,30 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { category, amount, description, date, vendor_name, payment_status } = req.body;
-    const id = crypto.randomUUID();
+    
+    const { data: newExpense, error } = await supabase
+      .from('expenses')
+      .insert([{
+        category, amount, description: description || null, date,
+        vendor_name: vendor_name || null, payment_status: payment_status || 'Paid',
+        created_by: req.user.id
+      }])
+      .select()
+      .single();
 
-    await query.run(
-      `INSERT INTO expenses (id, category, amount, description, date, vendor_name, payment_status, created_by) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id, 
-        category, 
-        amount, 
-        description || null, 
-        date, 
-        vendor_name || null, 
-        payment_status || 'Paid', 
-        req.user.id
-      ]
-    );
+    if (error) throw error;
 
-    // Fire notification dynamically to avoid circular dep
     try {
       const { createNotification } = await import('./notifications.js');
       createNotification(
         'New Property Expense',
         `An expense of ₹${amount} was recorded under ${category}.`,
-        'low',
-        'expense',
-        '/admin/expenses'
+        'low', 'expense', '/admin/expenses'
       );
     } catch (e) {
       console.error('Failed to trigger expense notification', e);
     }
 
-    const newExpense = await query.get('SELECT * FROM expenses WHERE id = ?', [id]);
     res.status(201).json(newExpense);
   } catch (err) {
     console.error('Error creating expense:', err);
@@ -67,7 +66,12 @@ router.post('/', authenticateToken, async (req, res) => {
 // DELETE /api/expenses/:id
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    await query.run('DELETE FROM expenses WHERE id = ?', [req.params.id]);
+    const { error } = await supabase
+      .from('expenses')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.status(204).send();
   } catch (err) {
     console.error('Error deleting expense:', err);

@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const { login, signup } = useAuth();
   const navigate = useNavigate();
-  
+
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {

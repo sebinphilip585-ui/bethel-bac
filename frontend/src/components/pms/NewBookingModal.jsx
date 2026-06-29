@@ -8,14 +8,6 @@ export default function NewBookingModal() {
   if (unacknowledgedBookings.length === 0) return null;
 
   const handleAcknowledgeAll = () => {
-    // Optimistically acknowledge them all in UI state
-    // Real-world: This should call an API endpoint to mark them as 'acknowledged'
-    setBookings(prev => prev.map(b => 
-      b.status === 'pending' ? { ...b, _acknowledged: true } : b
-    ));
-    // Actually we can just update local storage or context so the modal disappears
-    // Since we rely on 'pending' status for unacknowledged bookings currently,
-    // let's just visually mark them in our context for this session.
     window.dispatchEvent(new CustomEvent('bm_acknowledge_all'));
   };
 

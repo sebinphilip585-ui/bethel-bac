@@ -1,6 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
-import { query } from '../database/db.js';
+import { supabase } from '../database/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -8,22 +8,31 @@ const router = express.Router();
 // GET /api/guests - List guests
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const guests = await query.all(`
-      SELECT g.*, 
-        COUNT(b.id) as computed_stays, 
-        MAX(b.check_in) as computed_last_stay
-      FROM guests g
-      LEFT JOIN bookings b ON g.id = b.guest_id
-      GROUP BY g.id
-      ORDER BY g.created_at DESC
-    `);
+    const { data: guests, error } = await supabase
+      .from('guests')
+      .select('*, bookings (id, check_in)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
     
     // Merge computed values
-    const processed = guests.map(g => ({
-      ...g,
-      total_stays: Math.max(g.total_stays || 0, g.computed_stays || 0),
-      last_stay: g.computed_last_stay || g.last_stay
-    }));
+    const processed = guests.map(g => {
+      const bks = g.bookings || [];
+      let last_stay = null;
+      if (bks.length > 0) {
+        last_stay = bks.map(b => b.check_in).sort().reverse()[0];
+      }
+      const bksCount = bks.length;
+      
+      const gWithoutBookings = { ...g };
+      delete gWithoutBookings.bookings;
+      
+      return {
+        ...gWithoutBookings,
+        total_stays: Math.max(g.total_stays || 0, bksCount),
+        last_stay: last_stay || g.last_stay
+      };
+    });
 
     res.json(processed);
   } catch (err) {
@@ -36,15 +45,17 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, email, phone, id_type, id_number, address, notes } = req.body;
-    const id = crypto.randomUUID();
+    
+    const { data: newGuest, error } = await supabase
+      .from('guests')
+      .insert([{
+        name, email, phone: phone || null, id_type: id_type || null,
+        id_number: id_number || null, address: address || null, notes: notes || null
+      }])
+      .select()
+      .single();
 
-    await query.run(
-      `INSERT INTO guests (id, name, email, phone, id_type, id_number, address, notes) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, email, phone || null, id_type || null, id_number || null, address || null, notes || null]
-    );
-
-    const newGuest = await query.get('SELECT * FROM guests WHERE id = ?', [id]);
+    if (error) throw error;
     res.status(201).json(newGuest);
   } catch (err) {
     console.error('Error creating guest:', err);
@@ -55,8 +66,13 @@ router.post('/', authenticateToken, async (req, res) => {
 // GET /api/guests/:id
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
-    const guest = await query.get('SELECT * FROM guests WHERE id = ?', [req.params.id]);
-    if (!guest) {
+    const { data: guest, error } = await supabase
+      .from('guests')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+      
+    if (error || !guest) {
       return res.status(404).json({ error: 'Guest not found' });
     }
     res.json(guest);

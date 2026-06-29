@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Load routers
-import { initDatabase } from './database/dbInit.js';
+
 import authRouter from './routes/auth.js';
 import roomsRouter from './routes/rooms.js';
 import bookingsRouter from './routes/bookings.js';
@@ -85,11 +85,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong on the server!' });
 });
 
-initDatabase().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Bethel Meadows API Server running on port ${PORT}`);
-  });
-}).catch(err => {
-  console.error("Failed to initialize database on startup:", err);
-  process.exit(1);
+app.listen(PORT, () => {
+  console.log(`Bethel Meadows API Server running on port ${PORT}`);
 });

@@ -10,34 +10,16 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- PROFILES (extends Supabase auth.users)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS profiles (
-  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  id UUID PRIMARY KEY,
   name TEXT NOT NULL,
-  email TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('admin', 'manager', 'receptionist')) DEFAULT 'receptionist',
   phone TEXT,
   active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
-
--- Auto-create profile on signup
-CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO profiles (id, name, email, role)
-  VALUES (
-    NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'role', 'receptionist')
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE OR REPLACE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 -- ============================================================
 -- ROOM TYPES
@@ -222,23 +204,35 @@ ALTER TABLE pricing_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE special_offers ENABLE ROW LEVEL SECURITY;
 
 -- Public read access for room types and offers (for website)
+DROP POLICY IF EXISTS "Room types are viewable by everyone" ON room_types;
 CREATE POLICY "Room types are viewable by everyone" ON room_types FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Active offers are viewable by everyone" ON special_offers;
 CREATE POLICY "Active offers are viewable by everyone" ON special_offers FOR SELECT USING (active = true);
 
 -- Staff can manage everything based on role
+DROP POLICY IF EXISTS "Staff can view profiles" ON profiles;
 CREATE POLICY "Staff can view profiles" ON profiles FOR SELECT USING (auth.uid() = id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'manager')));
+DROP POLICY IF EXISTS "Admin can manage profiles" ON profiles;
 CREATE POLICY "Admin can manage profiles" ON profiles FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
 
+DROP POLICY IF EXISTS "Staff can view rooms" ON rooms;
 CREATE POLICY "Staff can view rooms" ON rooms FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
+DROP POLICY IF EXISTS "Admin can manage rooms" ON rooms;
 CREATE POLICY "Admin can manage rooms" ON rooms FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
 
+DROP POLICY IF EXISTS "Staff can view guests" ON guests;
 CREATE POLICY "Staff can view guests" ON guests FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
+DROP POLICY IF EXISTS "Staff can manage guests" ON guests;
 CREATE POLICY "Staff can manage guests" ON guests FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Staff can view bookings" ON bookings;
 CREATE POLICY "Staff can view bookings" ON bookings FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
+DROP POLICY IF EXISTS "Staff can manage bookings" ON bookings;
 CREATE POLICY "Staff can manage bookings" ON bookings FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Staff can view pricing" ON pricing_rules;
 CREATE POLICY "Staff can view pricing" ON pricing_rules FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
+DROP POLICY IF EXISTS "Admin can manage pricing" ON pricing_rules;
 CREATE POLICY "Admin can manage pricing" ON pricing_rules FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- ============================================================
@@ -248,4 +242,80 @@ INSERT INTO room_types (name, slug, description, short_description, base_price, 
 ('Deluxe Room', 'deluxe-room', 'A beautifully appointed room featuring modern amenities and elegant wooden interiors.', 'Elegant comfort with modern amenities', 3500, 2, 320, 'King', '["Air Conditioning", "Smart TV", "Free WiFi", "Mini Bar", "Room Service", "Attached Bathroom", "Hot Water", "Wardrobe"]', '["/images/rooms/room-bed.jpg", "/images/rooms/room-ac.jpg"]', true),
 ('Premium Suite', 'premium-suite', 'Spacious suite with separate living area and premium furnishings.', 'Spacious luxury with living area', 5500, 2, 480, 'King', '["Air Conditioning", "Smart TV 55\"", "Free WiFi", "Mini Bar", "Room Service", "Living Area", "Sofa Set", "Work Desk"]', '["/images/rooms/room-tv.jpg", "/images/rooms/room-sofa.jpg"]', true),
 ('Family Suite', 'family-suite', 'Generously sized suite designed for families with separate sleeping and living areas.', 'Perfect for families with extra space', 7500, 4, 620, 'King + Twin', '["Air Conditioning", "Smart TV 55\"", "Free WiFi", "Room Service", "Living Area", "Dining Area", "Kitchenette"]', '["/images/rooms/room-living.jpg", "/images/rooms/room-sofa.jpg"]', true),
-('Executive Room', 'executive-room', 'A refined room designed for business travelers with dedicated work desk.', 'Designed for business travelers', 4500, 2, 380, 'King', '["Air Conditioning", "Smart TV", "High-Speed WiFi", "Mini Bar", "Work Desk", "Ergonomic Chair", "Laptop Safe"]', '["/images/rooms/room-ac.jpg", "/images/rooms/room-tv.jpg"]', false);
+('Executive Room', 'executive-room', 'A refined room designed for business travelers with dedicated work desk.', 'Designed for business travelers', 4500, 2, 380, 'King', '["Air Conditioning", "Smart TV", "High-Speed WiFi", "Mini Bar", "Work Desk", "Ergonomic Chair", "Laptop Safe"]', '["/images/rooms/room-ac.jpg", "/images/rooms/room-tv.jpg"]', false)
+ON CONFLICT (name) DO NOTHING;
+
+-- ============================================================
+-- EXPENSES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS expenses (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  category TEXT NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  description TEXT,
+  date DATE NOT NULL,
+  vendor_name TEXT,
+  payment_status TEXT DEFAULT 'Paid',
+  created_by UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ============================================================
+-- CALENDAR EVENTS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS calendar_events (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title TEXT NOT NULL,
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ NOT NULL,
+  type TEXT DEFAULT 'meeting',
+  description TEXT,
+  color TEXT DEFAULT '#3b82f6',
+  staff_id UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ============================================================
+-- DIGITAL QUEUE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS digital_queue (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  token_number TEXT NOT NULL,
+  guest_name TEXT NOT NULL,
+  purpose TEXT NOT NULL,
+  priority TEXT DEFAULT 'normal',
+  notes TEXT,
+  status TEXT DEFAULT 'waiting',
+  joined_at TIMESTAMPTZ DEFAULT now(),
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ============================================================
+-- NOTIFICATIONS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  priority TEXT DEFAULT 'low',
+  type TEXT NOT NULL,
+  link TEXT,
+  read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Row Level Security for new tables
+ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE digital_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Staff can view expenses" ON expenses;
+CREATE POLICY "Staff can view expenses" ON expenses FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Staff can view calendar" ON calendar_events;
+CREATE POLICY "Staff can view calendar" ON calendar_events FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Staff can view queue" ON digital_queue;
+CREATE POLICY "Staff can view queue" ON digital_queue FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Staff can view notifications" ON notifications;
+CREATE POLICY "Staff can view notifications" ON notifications FOR SELECT USING (true);

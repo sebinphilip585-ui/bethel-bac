@@ -1,6 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
-import { query } from '../database/db.js';
+import { supabase } from '../database/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -8,29 +8,21 @@ const router = express.Router();
 // GET /api/rooms - Get all rooms with their types
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const rooms = await query.all(`
-      SELECT 
-        r.id, r.room_number, r.floor, r.status, r.active, r.room_type_id,
-        json_object(
-          'id', rt.id,
-          'name', rt.name,
-          'description', rt.description,
-          'base_price', rt.base_price,
-          'capacity', rt.capacity,
-          'size', rt.size,
-          'bed_type', rt.bed_type,
-          'facilities', rt.facilities,
-          'images', rt.images
-        ) as room_type
-      FROM rooms r
-      LEFT JOIN room_types rt ON r.room_type_id = rt.id
-      ORDER BY r.room_number ASC
-    `);
+    const { data: rooms, error } = await supabase
+      .from('rooms')
+      .select(`
+        id, room_number, floor, status, active, room_type_id,
+        room_types (
+          id, name, description, base_price, capacity, size, bed_type, facilities, images
+        )
+      `)
+      .order('room_number', { ascending: true });
 
-    // Parse the JSON string from sqlite json_object
+    if (error) throw error;
+
     const parsedRooms = rooms.map(r => ({
       ...r,
-      room_type: r.room_type ? JSON.parse(r.room_type) : null
+      room_type: r.room_types
     }));
 
     res.json(parsedRooms);
@@ -43,14 +35,14 @@ router.get('/', authenticateToken, async (req, res) => {
 // GET /api/rooms/types - Get all room types
 router.get('/types', authenticateToken, async (req, res) => {
   try {
-    const types = await query.all('SELECT * FROM room_types ORDER BY name ASC');
-    // parse JSON arrays
-    const parsedTypes = types.map(t => ({
-      ...t,
-      facilities: JSON.parse(t.facilities || '[]'),
-      images: JSON.parse(t.images || '[]')
-    }));
-    res.json(parsedTypes);
+    const { data: types, error } = await supabase
+      .from('room_types')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) throw error;
+
+    res.json(types);
   } catch (err) {
     console.error('Error fetching room types:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -61,17 +53,17 @@ router.get('/types', authenticateToken, async (req, res) => {
 router.post('/types', authenticateToken, async (req, res) => {
   try {
     const { name, description, base_price, capacity, size, bed_type, facilities } = req.body;
-    const id = crypto.randomUUID();
     
-    await query.run(
-      `INSERT INTO room_types (id, name, description, base_price, capacity, size, bed_type, facilities) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, description, base_price, capacity, size, bed_type, JSON.stringify(facilities || [])]
-    );
-    
-    const newType = await query.get('SELECT * FROM room_types WHERE id = ?', [id]);
-    newType.facilities = JSON.parse(newType.facilities || '[]');
-    newType.images = JSON.parse(newType.images || '[]');
+    const { data: newType, error } = await supabase
+      .from('room_types')
+      .insert([{
+        name, description, base_price, capacity, size, bed_type, 
+        facilities: facilities || []
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
     res.status(201).json(newType);
   } catch (err) {
     console.error('Error creating room type:', err);
@@ -84,31 +76,29 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     const { room_number, room_type_id, floor } = req.body;
     
-    const existing = await query.get('SELECT id FROM rooms WHERE room_number = ?', [room_number]);
+    // Check existing
+    const { data: existing } = await supabase
+      .from('rooms')
+      .select('id')
+      .eq('room_number', room_number)
+      .single();
+
     if (existing) {
       return res.status(400).json({ error: 'Room number already exists' });
     }
 
-    const id = crypto.randomUUID();
-    await query.run(
-      'INSERT INTO rooms (id, room_number, room_type_id, floor) VALUES (?, ?, ?, ?)',
-      [id, room_number, room_type_id, floor]
-    );
+    const { data: newRoom, error: insertError } = await supabase
+      .from('rooms')
+      .insert([{ room_number, room_type_id, floor }])
+      .select(`
+        *,
+        room_types (id, name, base_price)
+      `)
+      .single();
 
-    const newRoom = await query.get(`
-      SELECT 
-        r.*,
-        json_object(
-          'id', rt.id,
-          'name', rt.name,
-          'base_price', rt.base_price
-        ) as room_type
-      FROM rooms r
-      LEFT JOIN room_types rt ON r.room_type_id = rt.id
-      WHERE r.id = ?
-    `, [id]);
+    if (insertError) throw insertError;
     
-    newRoom.room_type = newRoom.room_type ? JSON.parse(newRoom.room_type) : null;
+    newRoom.room_type = newRoom.room_types;
     res.status(201).json(newRoom);
   } catch (err) {
     console.error('Error creating room:', err);
@@ -120,7 +110,12 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id/status', authenticateToken, async (req, res) => {
   const { status } = req.body;
   try {
-    await query.run('UPDATE rooms SET status = ? WHERE id = ?', [status, req.params.id]);
+    const { error } = await supabase
+      .from('rooms')
+      .update({ status })
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.json({ success: true });
   } catch (err) {
     console.error('Error updating room status:', err);
@@ -131,7 +126,12 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
 // DELETE /api/rooms/:id - Delete a room
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    await query.run('DELETE FROM rooms WHERE id = ?', [req.params.id]);
+    const { error } = await supabase
+      .from('rooms')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.status(204).send();
   } catch (err) {
     console.error('Error deleting room:', err);

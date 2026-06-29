@@ -1,6 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
-import { query } from '../database/db.js';
+import { supabase } from '../database/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -8,8 +8,20 @@ const router = express.Router();
 // GET /api/queue - List queue entries
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const queue = await query.all('SELECT * FROM digital_queue ORDER BY CASE WHEN status = \'waiting\' THEN 0 ELSE 1 END, joined_at ASC');
-    res.json(queue || []);
+    const { data: queue, error } = await supabase
+      .from('digital_queue')
+      .select('*');
+
+    if (error) throw error;
+    
+    // Custom sort: waiting first, then by joined_at
+    const sorted = (queue || []).sort((a, b) => {
+      if (a.status === 'waiting' && b.status !== 'waiting') return -1;
+      if (a.status !== 'waiting' && b.status === 'waiting') return 1;
+      return new Date(a.joined_at) - new Date(b.joined_at);
+    });
+
+    res.json(sorted);
   } catch (err) {
     console.error('Error fetching queue:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -20,15 +32,16 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { token_number, guest_name, purpose, priority, notes } = req.body;
-    const id = crypto.randomUUID();
+    
+    const { data: newEntry, error } = await supabase
+      .from('digital_queue')
+      .insert([{
+        token_number, guest_name, purpose, priority: priority || 'normal', notes: notes || null
+      }])
+      .select()
+      .single();
 
-    await query.run(
-      `INSERT INTO digital_queue (id, token_number, guest_name, purpose, priority, notes) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [id, token_number, guest_name, purpose, priority || 'normal', notes || null]
-    );
-
-    const newEntry = await query.get('SELECT * FROM digital_queue WHERE id = ?', [id]);
+    if (error) throw error;
     res.status(201).json(newEntry);
   } catch (err) {
     console.error('Error joining queue:', err);
@@ -40,13 +53,17 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id/status', authenticateToken, async (req, res) => {
   try {
     const { status } = req.body;
-    let sql = 'UPDATE digital_queue SET status = ?';
+    const updates = { status };
     if (status === 'completed' || status === 'cancelled') {
-      sql += ', completed_at = CURRENT_TIMESTAMP';
+      updates.completed_at = new Date().toISOString();
     }
-    sql += ' WHERE id = ?';
     
-    await query.run(sql, [status, req.params.id]);
+    const { error } = await supabase
+      .from('digital_queue')
+      .update(updates)
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.json({ success: true });
   } catch (err) {
     console.error('Error updating queue status:', err);

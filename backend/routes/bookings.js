@@ -1,7 +1,7 @@
 import express from 'express';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { query } from '../database/db.js';
+import { supabase } from '../database/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -11,9 +11,7 @@ let clients = [];
 // GET /api/bookings/stream (Real-time updates)
 router.get('/stream', (req, res) => {
   const token = req.query.token;
-  if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
-  }
+  if (!token) return res.status(401).json({ error: 'Access token required' });
 
   const JWT_SECRET = process.env.JWT_SECRET || 'bethelmeadows-super-secret-key-987';
   try {
@@ -45,63 +43,55 @@ const broadcastNewBooking = (booking) => {
   });
 };
 
-const formatDate = (date) => {
-  const d = new Date(date);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-};
-
 async function getFullBooking(id) {
-  const b = await query.get(`
-    SELECT b.*,
-           json_object('id', g.id, 'name', g.name, 'email', g.email, 'phone', g.phone) as guest,
-           json_object('id', rt.id, 'name', rt.name) as room_type_data,
-           json_object('id', r.id, 'room_number', r.room_number) as room
-    FROM bookings b
-    LEFT JOIN guests g ON b.guest_id = g.id
-    LEFT JOIN rooms r ON b.room_id = r.id
-    LEFT JOIN room_types rt ON b.room_type_id = rt.id
-    WHERE b.id = ?
-  `, [id]);
+  const { data: b, error } = await supabase
+    .from('bookings')
+    .select(`
+      *,
+      guest:guests (id, name, email, phone),
+      room:rooms (id, room_number, room_types (id, name)),
+      room_type_data:room_types (id, name)
+    `)
+    .eq('id', id)
+    .single();
 
-  if (!b) return null;
-  
-  b.guest = b.guest ? JSON.parse(b.guest) : null;
-  const rt = b.room_type_data ? JSON.parse(b.room_type_data) : null;
-  const rm = b.room ? JSON.parse(b.room) : null;
+  if (error || !b) return null;
+
+  const rt = b.room_type_data;
+  const rm = b.room;
   if (rm && rt) {
     rm.room_type = rt;
   }
-  b.room = rm;
-  b.roomType = rt ? rt.name : '';
-  b.guests_count = parseInt(b.guests_count) || 1;
-  b.total_amount = parseFloat(b.total_amount);
-  b.amount_paid = parseFloat(b.amount_paid || 0);
-  delete b.room_type_data;
-  return b;
+  
+  return {
+    ...b,
+    room: rm || null,
+    guest: b.guest || null,
+    roomType: rt?.name || '',
+    guests_count: parseInt(b.guests_count) || 1,
+    total_amount: parseFloat(b.total_amount),
+    amount_paid: parseFloat(b.amount_paid || 0)
+  };
 }
 
 // GET /api/bookings
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const rows = await query.all(`
-      SELECT b.*,
-             json_object('id', g.id, 'name', g.name, 'email', g.email, 'phone', g.phone) as guest,
-             json_object('id', rt.id, 'name', rt.name) as room_type_data,
-             json_object('id', r.id, 'room_number', r.room_number) as room
-      FROM bookings b
-      LEFT JOIN guests g ON b.guest_id = g.id
-      LEFT JOIN rooms r ON b.room_id = r.id
-      LEFT JOIN room_types rt ON b.room_type_id = rt.id
-      ORDER BY b.created_at DESC
-    `);
+    const { data: rows, error } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        guest:guests (id, name, email, phone),
+        room:rooms (id, room_number, room_types (id, name)),
+        room_type_data:room_types (id, name)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
 
     const mapped = rows.map(b => {
-      b.guest = b.guest ? JSON.parse(b.guest) : null;
-      const rt = b.room_type_data ? JSON.parse(b.room_type_data) : null;
-      const rm = b.room ? JSON.parse(b.room) : null;
+      const rt = b.room_type_data;
+      const rm = b.room;
       if (rm && rt) {
         rm.room_type = rt;
       }
@@ -137,37 +127,46 @@ router.post('/', async (req, res) => {
 
   try {
     // Guest
-    let guest = await query.get('SELECT * FROM guests WHERE email = ? COLLATE NOCASE', [guestEmail]);
+    const { data: existingGuest } = await supabase
+      .from('guests')
+      .select('id')
+      .eq('email', guestEmail)
+      .maybeSingle();
+
     let guestId;
-    if (!guest) {
+    if (!existingGuest) {
       guestId = crypto.randomUUID();
-      await query.run(
-        'INSERT INTO guests (id, name, email, phone, id_type, id_number) VALUES (?, ?, ?, ?, ?, ?)',
-        [guestId, guestName, guestEmail, guestPhone, guestIdType, guestIdNumber]
-      );
+      await supabase.from('guests').insert([{
+        id: guestId, name: guestName, email: guestEmail, phone: guestPhone,
+        id_type: guestIdType, id_number: guestIdNumber
+      }]);
     } else {
-      guestId = guest.id;
-      await query.run(
-        'UPDATE guests SET name = COALESCE(?, name), phone = COALESCE(?, phone), id_type = COALESCE(?, id_type), id_number = COALESCE(?, id_number) WHERE id = ?',
-        [guestName, guestPhone, guestIdType, guestIdNumber, guestId]
-      );
+      guestId = existingGuest.id;
+      await supabase.from('guests').update({
+        name: guestName, phone: guestPhone, id_type: guestIdType, id_number: guestIdNumber
+      }).eq('id', guestId);
     }
 
     // Room Allocation
-    const candidateRooms = await query.all(`
-      SELECT * FROM rooms 
-      WHERE room_type_id = ? AND active = 1 AND status != 'maintenance'
-    `, [roomTypeId]);
+    const { data: candidateRooms } = await supabase
+      .from('rooms')
+      .select('id')
+      .eq('room_type_id', roomTypeId)
+      .eq('active', true)
+      .neq('status', 'maintenance');
 
     let assignedRoomId = null;
-    if (candidateRooms.length > 0) {
+    if (candidateRooms && candidateRooms.length > 0) {
       for (const r of candidateRooms) {
-        const overlapping = await query.get(`
-          SELECT id FROM bookings 
-          WHERE room_id = ? AND status IN ('confirmed', 'checked_in')
-          AND ((check_in <= ? AND check_out > ?) OR (check_in < ? AND check_out >= ?) OR (check_in >= ? AND check_out <= ?))
-        `, [r.id, checkOut, checkIn, checkOut, checkIn, checkIn, checkOut]);
-        if (!overlapping) {
+        const { data: overlapping } = await supabase
+          .from('bookings')
+          .select('id')
+          .eq('room_id', r.id)
+          .in('status', ['confirmed', 'checked_in'])
+          .or(`and(check_in.lte.${checkOut},check_out.gt.${checkIn}),and(check_in.lt.${checkOut},check_out.gte.${checkIn}),and(check_in.gte.${checkIn},check_out.lte.${checkOut})`)
+          .limit(1);
+          
+        if (!overlapping || overlapping.length === 0) {
           assignedRoomId = r.id;
           break;
         }
@@ -178,12 +177,9 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'No rooms available for the selected dates and room type' });
     }
 
-    const bookingId = crypto.randomUUID();
-    const createdBy = req.user?.id || null;
     const finalAmountPaid = parseFloat(amountPaid) || 0;
     const finalTotalAmount = parseFloat(totalAmount) || 0;
     
-    // Auto status
     let finalStatus = 'pending';
     let pStatus = paymentStatus || 'pending';
     if (finalAmountPaid >= finalTotalAmount && finalTotalAmount > 0) {
@@ -198,29 +194,29 @@ router.post('/', async (req, res) => {
 
     const source = req.user ? 'staff' : 'direct';
 
-    await query.run(`
-      INSERT INTO bookings (
-        id, guest_id, room_id, room_type_id, check_in, check_out, guests_count,
-        total_amount, amount_paid, payment_status, payment_method, payment_source,
-        special_requests, notes, status, source, created_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      bookingId, guestId, assignedRoomId, roomTypeId, checkIn, checkOut, parseInt(guests) || 1,
-      finalTotalAmount, finalAmountPaid, pStatus, paymentMethod || null, paymentSource || null,
-      specialRequests || null, notes || null, finalStatus, source, createdBy
-    ]);
+    const { data: newBooking, error: insertError } = await supabase
+      .from('bookings')
+      .insert([{
+        guest_id: guestId, room_id: assignedRoomId, room_type_id: roomTypeId,
+        check_in: checkIn, check_out: checkOut, guests_count: parseInt(guests) || 1,
+        total_amount: finalTotalAmount, amount_paid: finalAmountPaid,
+        payment_status: pStatus, payment_method: paymentMethod || null, payment_source: paymentSource || null,
+        special_requests: specialRequests || null, notes: notes || null,
+        status: finalStatus, source, created_by: req.user?.id || null
+      }])
+      .select('id')
+      .single();
 
-    const finalBooking = await getFullBooking(bookingId);
+    if (insertError) throw insertError;
 
-    // Notification
+    const finalBooking = await getFullBooking(newBooking.id);
+
     try {
       const { createNotification } = await import('./notifications.js');
       createNotification(
         'New Booking Received',
-        `Booking ${bookingId.substring(0, 8)} created for ${guestName} (${finalBooking.roomType}).`,
-        'high',
-        'booking',
-        '/admin/reservations'
+        `Booking ${newBooking.id.substring(0, 8)} created for ${guestName} (${finalBooking.roomType}).`,
+        'high', 'booking', '/admin/reservations'
       );
     } catch (e) {
       console.error('Notification failed', e);
@@ -244,7 +240,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
     res.json(booking);
   } catch (err) {
-    console.error('Error fetching booking:', err);
     res.status(500).json({ error: 'Failed to fetch booking' });
   }
 });
@@ -253,19 +248,18 @@ router.get('/:id', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { room_id, check_in, check_out, status, notes } = req.body;
-    await query.run(
-      'UPDATE bookings SET room_id = ?, check_in = ?, check_out = ?, status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [room_id || null, check_in, check_out, status, notes || null, req.params.id]
-    );
+    
+    await supabase.from('bookings').update({
+      room_id: room_id || null, check_in, check_out, status, notes: notes || null
+    }).eq('id', req.params.id);
 
     if (room_id && status === 'checked_in') {
-      await query.run('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', room_id]);
+      await supabase.from('rooms').update({ status: 'occupied' }).eq('id', room_id);
     }
 
     const updated = await getFullBooking(req.params.id);
     res.json(updated);
   } catch (err) {
-    console.error('Error updating booking:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -276,43 +270,32 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
   const bookingId = req.params.id;
 
   try {
-    const current = await query.get('SELECT status, room_id FROM bookings WHERE id = ?', [bookingId]);
+    const { data: current } = await supabase.from('bookings').select('status, room_id').eq('id', bookingId).single();
     if (!current) return res.status(404).json({ error: 'Booking not found' });
 
-    let sql = 'UPDATE bookings SET status = ?, updated_at = CURRENT_TIMESTAMP';
-    const params = [status];
-    
-    if (status === 'checked_in') {
-      sql += ', actual_check_in = CURRENT_TIMESTAMP';
-    } else if (status === 'checked_out') {
-      sql += ', actual_check_out = CURRENT_TIMESTAMP';
-    }
+    const updates = { status };
+    if (status === 'checked_in') updates.actual_check_in = new Date().toISOString();
+    else if (status === 'checked_out') updates.actual_check_out = new Date().toISOString();
 
-    sql += ' WHERE id = ?';
-    params.push(bookingId);
+    await supabase.from('bookings').update(updates).eq('id', bookingId);
 
-    await query.run(sql, params);
-
-    // Update room status
     const targetRoomId = room_id || current.room_id;
     if (targetRoomId) {
       if (status === 'checked_in') {
-        await query.run('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', targetRoomId]);
+        await supabase.from('rooms').update({ status: 'occupied' }).eq('id', targetRoomId);
       } else if (status === 'checked_out' || status === 'cancelled') {
-        await query.run('UPDATE rooms SET status = ? WHERE id = ?', ['cleaning', targetRoomId]);
+        await supabase.from('rooms').update({ status: 'cleaning' }).eq('id', targetRoomId);
       }
     }
 
     try {
       const { createNotification } = await import('./notifications.js');
-      let msg = `Booking ${bookingId.substring(0,8)} status changed to ${status}`;
-      createNotification('Booking Update', msg, 'low', 'booking', '/admin/reservations');
+      createNotification('Booking Update', `Booking ${bookingId.substring(0,8)} status changed to ${status}`, 'low', 'booking', '/admin/reservations');
     } catch(e) {}
 
     const updated = await getFullBooking(bookingId);
     res.json(updated);
   } catch (err) {
-    console.error('Error updating booking status:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -323,21 +306,19 @@ router.put('/:id/payment', authenticateToken, async (req, res) => {
   const bookingId = req.params.id;
 
   try {
-    const booking = await query.get('SELECT total_amount, amount_paid FROM bookings WHERE id = ?', [bookingId]);
+    const { data: booking } = await supabase.from('bookings').select('total_amount, amount_paid').eq('id', bookingId).single();
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
     const newAmount = (booking.amount_paid || 0) + (parseFloat(amount_paid) || 0);
     const newStatus = payment_status || (newAmount >= booking.total_amount ? 'paid' : (newAmount > 0 ? 'partial' : 'pending'));
 
-    await query.run(
-      'UPDATE bookings SET amount_paid = ?, payment_status = ?, payment_method = ?, payment_source = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [newAmount, newStatus, payment_method || null, payment_source || null, bookingId]
-    );
+    await supabase.from('bookings').update({
+      amount_paid: newAmount, payment_status: newStatus, payment_method: payment_method || null, payment_source: payment_source || null
+    }).eq('id', bookingId);
 
     const updated = await getFullBooking(bookingId);
     res.json(updated);
   } catch (err) {
-    console.error('Error updating payment:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

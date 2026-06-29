@@ -1,6 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
-import { query } from '../database/db.js';
+import { supabase } from '../database/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -23,14 +23,16 @@ router.get('/stream', (req, res) => {
 });
 
 export const createNotification = async (title, message, priority, type, link) => {
-  const id = crypto.randomUUID();
   try {
-    await query.run(
-      'INSERT INTO notifications (id, title, message, priority, type, link) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, title, message, priority, type, link]
-    );
+    const { data: notification, error } = await supabase
+      .from('notifications')
+      .insert([{
+        title, message, priority, type, link
+      }])
+      .select()
+      .single();
 
-    const notification = await query.get('SELECT * FROM notifications WHERE id = ?', [id]);
+    if (error) throw error;
 
     // Broadcast to SSE clients
     clients.forEach(c => {
@@ -51,7 +53,13 @@ export const createNotification = async (title, message, priority, type, link) =
 // GET /api/notifications
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const notifications = await query.all('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 50');
+    const { data: notifications, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
     res.json(notifications || []);
   } catch (err) {
     console.error('Error fetching notifications:', err);
@@ -62,7 +70,12 @@ router.get('/', authenticateToken, async (req, res) => {
 // PUT /api/notifications/:id/read
 router.put('/:id/read', authenticateToken, async (req, res) => {
   try {
-    await query.run('UPDATE notifications SET read = 1 WHERE id = ?', [req.params.id]);
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.json({ success: true });
   } catch (err) {
     console.error('Error marking notification read:', err);
@@ -73,7 +86,12 @@ router.put('/:id/read', authenticateToken, async (req, res) => {
 // PUT /api/notifications/read-all
 router.put('/read-all', authenticateToken, async (req, res) => {
   try {
-    await query.run('UPDATE notifications SET read = 1 WHERE read = 0');
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('read', false);
+
+    if (error) throw error;
     res.json({ success: true });
   } catch (err) {
     console.error('Error marking all notifications read:', err);
@@ -84,7 +102,12 @@ router.put('/read-all', authenticateToken, async (req, res) => {
 // DELETE /api/notifications/:id
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    await query.run('DELETE FROM notifications WHERE id = ?', [req.params.id]);
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.status(204).send();
   } catch (err) {
     console.error('Error deleting notification:', err);

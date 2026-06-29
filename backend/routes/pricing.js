@@ -1,6 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
-import { query } from '../database/db.js';
+import { supabase } from '../database/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -8,7 +8,12 @@ const router = express.Router();
 // GET /api/pricing/rules - Get all pricing rules
 router.get('/rules', authenticateToken, async (req, res) => {
   try {
-    const rules = await query.all('SELECT * FROM pricing_rules ORDER BY created_at DESC');
+    const { data: rules, error } = await supabase
+      .from('pricing_rules')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
     res.json(rules);
   } catch (err) {
     console.error('Error fetching pricing rules:', err);
@@ -20,15 +25,17 @@ router.get('/rules', authenticateToken, async (req, res) => {
 router.post('/rules', authenticateToken, async (req, res) => {
   try {
     const { name, type, multiplier, start_date, end_date, threshold, description, active } = req.body;
-    const id = crypto.randomUUID();
     
-    await query.run(
-      `INSERT INTO pricing_rules (id, name, type, multiplier, start_date, end_date, threshold, description, active) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, name, type, multiplier, start_date || null, end_date || null, threshold || null, description || null, active === false ? 0 : 1]
-    );
-    
-    const newRule = await query.get('SELECT * FROM pricing_rules WHERE id = ?', [id]);
+    const { data: newRule, error } = await supabase
+      .from('pricing_rules')
+      .insert([{
+        name, type, multiplier, start_date: start_date || null, end_date: end_date || null,
+        threshold: threshold || null, description: description || null, active: active !== false
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
     res.status(201).json(newRule);
   } catch (err) {
     console.error('Error creating pricing rule:', err);
@@ -40,7 +47,12 @@ router.post('/rules', authenticateToken, async (req, res) => {
 router.put('/rules/:id', authenticateToken, async (req, res) => {
   try {
     const { active } = req.body;
-    await query.run('UPDATE pricing_rules SET active = ? WHERE id = ?', [active ? 1 : 0, req.params.id]);
+    const { error } = await supabase
+      .from('pricing_rules')
+      .update({ active: !!active })
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.json({ success: true });
   } catch (err) {
     console.error('Error updating rule:', err);
@@ -51,7 +63,12 @@ router.put('/rules/:id', authenticateToken, async (req, res) => {
 // DELETE /api/pricing/rules/:id
 router.delete('/rules/:id', authenticateToken, async (req, res) => {
   try {
-    await query.run('DELETE FROM pricing_rules WHERE id = ?', [req.params.id]);
+    const { error } = await supabase
+      .from('pricing_rules')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.status(204).send();
   } catch (err) {
     console.error('Error deleting rule:', err);
@@ -62,13 +79,14 @@ router.delete('/rules/:id', authenticateToken, async (req, res) => {
 // GET /api/pricing/offers - Get all special offers
 router.get('/offers', authenticateToken, async (req, res) => {
   try {
-    const offers = await query.all('SELECT * FROM special_offers ORDER BY created_at DESC');
+    const { data: offers, error } = await supabase
+      .from('special_offers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error && error.code !== '42P01') throw error; // Ignore table not found
     res.json(offers || []);
   } catch (err) {
-    // If the table is missing because it wasn't added in dbInit, return empty array rather than crash
-    if (err.message.includes('no such table')) {
-      return res.json([]);
-    }
     console.error('Error fetching special offers:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -78,25 +96,17 @@ router.get('/offers', authenticateToken, async (req, res) => {
 router.post('/offers', authenticateToken, async (req, res) => {
   try {
     const { title, description, discount_percent, code, valid_from, valid_to, min_stay } = req.body;
-    const id = crypto.randomUUID();
 
-    // Check table exists or create it if omitted
-    await query.run(`
-      CREATE TABLE IF NOT EXISTS special_offers (
-        id TEXT PRIMARY KEY, title TEXT NOT NULL, description TEXT, discount_percent INTEGER,
-        discount_amount REAL, code TEXT UNIQUE NOT NULL, valid_from TEXT, valid_to TEXT,
-        min_stay INTEGER DEFAULT 1, max_uses INTEGER, current_uses INTEGER DEFAULT 0,
-        active INTEGER DEFAULT 1, created_at TEXT DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+    const { data: newOffer, error } = await supabase
+      .from('special_offers')
+      .insert([{
+        title, description, discount_percent, code, valid_from: valid_from || null,
+        valid_to: valid_to || null, min_stay: min_stay || 1
+      }])
+      .select()
+      .single();
 
-    await query.run(
-      `INSERT INTO special_offers (id, title, description, discount_percent, code, valid_from, valid_to, min_stay) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, title, description, discount_percent, code, valid_from || null, valid_to || null, min_stay || 1]
-    );
-
-    const newOffer = await query.get('SELECT * FROM special_offers WHERE id = ?', [id]);
+    if (error) throw error;
     res.status(201).json(newOffer);
   } catch (err) {
     console.error('Error creating offer:', err);
@@ -107,7 +117,12 @@ router.post('/offers', authenticateToken, async (req, res) => {
 // DELETE /api/pricing/offers/:id
 router.delete('/offers/:id', authenticateToken, async (req, res) => {
   try {
-    await query.run('DELETE FROM special_offers WHERE id = ?', [req.params.id]);
+    const { error } = await supabase
+      .from('special_offers')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.status(204).send();
   } catch (err) {
     console.error('Error deleting offer:', err);

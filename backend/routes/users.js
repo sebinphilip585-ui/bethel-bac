@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { query } from '../database/db.js';
+import { supabase } from '../database/supabase.js';
 import { authenticateToken, authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -12,7 +12,12 @@ const requireAdmin = authorizeRoles('admin');
 // GET /api/users
 router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const users = await query.all('SELECT id, name, email, role, phone, active, created_at FROM profiles ORDER BY created_at DESC');
+    const { data: users, error } = await supabase
+      .from('profiles')
+      .select('id, name, email, role, phone, active, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
     res.json(users);
   } catch (err) {
     console.error('Error fetching users:', err);
@@ -30,7 +35,12 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 
   try {
     // Check if user exists
-    const existing = await query.get('SELECT id FROM profiles WHERE email = ?', [email]);
+    const { data: existing } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
     if (existing) {
       return res.status(400).json({ error: 'Email already in use' });
     }
@@ -38,12 +48,13 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     const password_hash = await bcrypt.hash(password, 10);
     const id = crypto.randomUUID();
 
-    await query.run(
-      'INSERT INTO profiles (id, name, email, role, phone, password_hash) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, name, email, role, phone || null, password_hash]
-    );
+    const { data: newUser, error } = await supabase
+      .from('profiles')
+      .insert([{ id, name, email, role, phone: phone || null, password_hash }])
+      .select('id, name, email, role, phone, active')
+      .single();
 
-    const newUser = await query.get('SELECT id, name, email, role, phone, active FROM profiles WHERE id = ?', [id]);
+    if (error) throw error;
     res.status(201).json(newUser);
   } catch (err) {
     console.error('Error creating user:', err);
@@ -57,21 +68,20 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
   const userId = req.params.id;
 
   try {
-    let sql = 'UPDATE profiles SET name = ?, role = ?, active = ?, phone = ?, updated_at = CURRENT_TIMESTAMP';
-    let params = [name, role, active ? 1 : 0, phone || null];
+    const updates = { name, role, active: !!active, phone: phone || null, updated_at: new Date().toISOString() };
 
     if (password) {
-      const password_hash = await bcrypt.hash(password, 10);
-      sql += ', password_hash = ?';
-      params.push(password_hash);
+      updates.password_hash = await bcrypt.hash(password, 10);
     }
 
-    sql += ' WHERE id = ?';
-    params.push(userId);
+    const { data: updatedUser, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId)
+      .select('id, name, email, role, phone, active')
+      .single();
 
-    await query.run(sql, params);
-
-    const updatedUser = await query.get('SELECT id, name, email, role, phone, active FROM profiles WHERE id = ?', [userId]);
+    if (error) throw error;
     res.json(updatedUser);
   } catch (err) {
     console.error('Error updating user:', err);
@@ -87,7 +97,12 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
-    await query.run('DELETE FROM profiles WHERE id = ?', [req.params.id]);
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) throw error;
     res.status(204).send();
   } catch (err) {
     console.error('Error deleting user:', err);
