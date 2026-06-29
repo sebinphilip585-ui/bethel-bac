@@ -198,57 +198,59 @@ const db = new sqlite3.Database(dbPath, async (err) => {
       )
     `);
 
-    console.log('Database tables created successfully.');
-  });
+    db.run("SELECT 1", (err) => {
+      console.log('Database tables created successfully.');
 
-  const runDb = (sql, params) => new Promise((resolve, reject) => {
-    db.run(sql, params, function(err) {
-      if (err) reject(err);
-      else resolve(this);
+      const runDb = (sql, params) => new Promise((resolve, reject) => {
+        db.run(sql, params, function(err) {
+          if (err) reject(err);
+          else resolve(this);
+        });
+      });
+
+      console.log('Seeding demo users...');
+      
+      (async () => {
+        try {
+          const password_hash = await bcrypt.hash('password', 10);
+          
+          const users = [
+            { id: crypto.randomUUID(), name: 'Admin User', email: 'admin@bethelmeadows.com', role: 'admin' },
+            { id: crypto.randomUUID(), name: 'Manager User', email: 'manager@bethelmeadows.com', role: 'manager' },
+            { id: crypto.randomUUID(), name: 'Receptionist User', email: 'reception@bethelmeadows.com', role: 'receptionist' }
+          ];
+
+          for (const user of users) {
+            await runDb(
+              'INSERT INTO profiles (id, name, email, role, password_hash) VALUES (?, ?, ?, ?, ?)',
+              [user.id, user.name, user.email, user.role, password_hash]
+            );
+          }
+          
+          console.log('Demo users seeded successfully!');
+          
+          // Seed some room types and rooms so the system isn't completely empty
+          const dlxId = crypto.randomUUID();
+          await runDb(
+            `INSERT INTO room_types (id, name, description, base_price, capacity, size, bed_type, facilities) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [dlxId, 'Deluxe Room', 'Beautiful deluxe room', 2500, 2, 300, 'King Size', JSON.stringify(['AC', 'TV'])]
+          );
+
+          await runDb(
+            `INSERT INTO rooms (id, room_number, room_type_id, floor, status) VALUES (?, ?, ?, ?, ?)`,
+            [crypto.randomUUID(), '101', dlxId, 1, 'available']
+          );
+
+          console.log('Base property data seeded successfully!');
+
+        } catch (e) {
+          console.error('Error seeding data:', e);
+        } finally {
+          db.close();
+          console.log('Database initialization complete.');
+        }
+      })();
     });
   });
-
-  console.log('Seeding demo users...');
-  
-  (async () => {
-    try {
-      const password_hash = await bcrypt.hash('password', 10);
-      
-      const users = [
-        { id: crypto.randomUUID(), name: 'Admin User', email: 'admin@bethelmeadows.com', role: 'admin' },
-        { id: crypto.randomUUID(), name: 'Manager User', email: 'manager@bethelmeadows.com', role: 'manager' },
-        { id: crypto.randomUUID(), name: 'Receptionist User', email: 'reception@bethelmeadows.com', role: 'receptionist' }
-      ];
-
-      for (const user of users) {
-        await runDb(
-          'INSERT INTO profiles (id, name, email, role, password_hash) VALUES (?, ?, ?, ?, ?)',
-          [user.id, user.name, user.email, user.role, password_hash]
-        );
-      }
-      
-      console.log('Demo users seeded successfully!');
-      
-      // Seed some room types and rooms so the system isn't completely empty
-      const dlxId = crypto.randomUUID();
-      await runDb(
-        `INSERT INTO room_types (id, name, description, base_price, capacity, size, bed_type, facilities) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [dlxId, 'Deluxe Room', 'Beautiful deluxe room', 2500, 2, 300, 'King Size', JSON.stringify(['AC', 'TV'])]
-      );
-
-      await runDb(
-        `INSERT INTO rooms (id, room_number, room_type_id, floor, status) VALUES (?, ?, ?, ?, ?)`,
-        [crypto.randomUUID(), '101', dlxId, 1, 'available']
-      );
-
-      console.log('Base property data seeded successfully!');
-
-    } catch (e) {
-      console.error('Error seeding data:', e);
-    } finally {
-      db.close();
-      console.log('Database initialization complete.');
-    }
-  })();
 });
