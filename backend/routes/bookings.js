@@ -136,15 +136,35 @@ router.post('/', async (req, res) => {
     let guestId;
     if (!existingGuest) {
       guestId = crypto.randomUUID();
-      await supabase.from('guests').insert([{
+      
+      const idTypeMap = {
+        'aadhaar': 'Aadhaar',
+        'passport': 'Passport',
+        'driving_license': 'Driving License',
+        'voter_id': 'Voter ID'
+      };
+      const mappedIdType = idTypeMap[guestIdType] || 'Other';
+      
+      const { error: guestError } = await supabase.from('guests').insert([{
         id: guestId, name: guestName, email: guestEmail, phone: guestPhone,
-        id_type: guestIdType, id_number: guestIdNumber
+        id_type: mappedIdType, id_number: guestIdNumber
       }]);
+      if (guestError) throw guestError;
     } else {
       guestId = existingGuest.id;
-      await supabase.from('guests').update({
-        name: guestName, phone: guestPhone, id_type: guestIdType, id_number: guestIdNumber
+      
+      const idTypeMap = {
+        'aadhaar': 'Aadhaar',
+        'passport': 'Passport',
+        'driving_license': 'Driving License',
+        'voter_id': 'Voter ID'
+      };
+      const mappedIdType = idTypeMap[guestIdType] || 'Other';
+      
+      const { error: updateError } = await supabase.from('guests').update({
+        name: guestName, phone: guestPhone, id_type: mappedIdType, id_number: guestIdNumber
       }).eq('id', guestId);
+      if (updateError) throw updateError;
     }
 
     // Room Allocation
