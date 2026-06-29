@@ -230,27 +230,35 @@ export async function initDatabase() {
               
               console.log('Demo users verified successfully!');
               
-              // Seed some room types and rooms ONLY if empty
-              const countRow = await new Promise((res, rej) => {
-                  db.get('SELECT COUNT(*) as count FROM room_types', (err, row) => {
-                      if (err) rej(err); else res(row);
-                  });
-              });
+              // Seed room types matching the frontend
+              const frontendRoomTypes = [
+                { id: 'rt-1', name: 'Deluxe Room', count: 8, base_price: 3500, capacity: 2, size: 320, bed_type: 'King' },
+                { id: 'rt-2', name: 'Premium Suite', count: 6, base_price: 5500, capacity: 2, size: 480, bed_type: 'King' },
+                { id: 'rt-3', name: 'Family Suite', count: 4, base_price: 7500, capacity: 4, size: 620, bed_type: 'King + Twin' },
+                { id: 'rt-4', name: 'Executive Room', count: 6, base_price: 4500, capacity: 2, size: 380, bed_type: 'King' }
+              ];
 
-              if (countRow.count === 0) {
-                  const dlxId = crypto.randomUUID();
+              for (const rt of frontendRoomTypes) {
+                await runDb(
+                  `INSERT OR IGNORE INTO room_types (id, name, description, base_price, capacity, size, bed_type) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                  [rt.id, rt.name, rt.name, rt.base_price, rt.capacity, rt.size, rt.bed_type]
+                );
+                
+                // Create exactly 'count' rooms for this type
+                for (let i = 1; i <= rt.count; i++) {
+                  const floorNum = parseInt(rt.id.replace('rt-', ''));
+                  const roomNum = `${floorNum}${String(i).padStart(2, '0')}`;
+                  const roomId = `room-${rt.id}-${i}`;
+                  
                   await runDb(
-                    `INSERT INTO room_types (id, name, description, base_price, capacity, size, bed_type, facilities) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [dlxId, 'Deluxe Room', 'Beautiful deluxe room', 2500, 2, 300, 'King Size', JSON.stringify(['AC', 'TV'])]
+                    `INSERT OR IGNORE INTO rooms (id, room_number, room_type_id, floor, status) VALUES (?, ?, ?, ?, ?)`,
+                    [roomId, roomNum, rt.id, floorNum, 'available']
                   );
-
-                  await runDb(
-                    `INSERT INTO rooms (id, room_number, room_type_id, floor, status) VALUES (?, ?, ?, ?, ?)`,
-                    [crypto.randomUUID(), '101', dlxId, 1, 'available']
-                  );
-                  console.log('Base property data seeded successfully!');
+                }
               }
+
+              console.log('Base property data synced with frontend successfully!');
 
             } catch (e) {
               console.error('Error seeding data:', e);
