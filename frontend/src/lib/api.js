@@ -37,7 +37,7 @@ export const api = {
 
   // Rooms & Room Types
   getRooms: () => apiRequest('/api/rooms'),
-  getRoomTypes: () => apiRequest('/api/rooms/room-types'),
+  getRoomTypes: () => apiRequest('/api/rooms/types'),
   addRoom: (roomData) => apiRequest('/api/rooms', {
     method: 'POST',
     body: JSON.stringify(roomData),
