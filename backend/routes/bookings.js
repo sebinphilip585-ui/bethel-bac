@@ -194,10 +194,14 @@ router.post('/', async (req, res) => {
 
     const source = req.user ? 'staff' : 'direct';
 
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const randomHex = crypto.randomBytes(2).toString('hex').toUpperCase();
+    const bookingId = `BM-${dateStr}-${randomHex}`;
+
     const { data: newBooking, error: insertError } = await supabase
       .from('bookings')
       .insert([{
-        guest_id: guestId, room_id: assignedRoomId, room_type_id: roomTypeId,
+        id: bookingId, guest_id: guestId, room_id: assignedRoomId, room_type_id: roomTypeId,
         check_in: checkIn, check_in_time: checkInTime || null, check_out: checkOut, check_out_time: checkOutTime || null, guests_count: parseInt(guests) || 1,
         total_amount: finalTotalAmount, amount_paid: finalAmountPaid,
         payment_status: pStatus, payment_method: paymentMethod || null, payment_source: paymentSource || null,

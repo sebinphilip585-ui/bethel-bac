@@ -77,10 +77,11 @@ router.post('/signup', async (req, res) => {
 
     const password_hash = await bcrypt.hash(password, 10);
     const assignedRole = role || 'manager';
+    const newId = crypto.randomUUID();
 
     const { data: newUser, error } = await supabase
       .from('profiles')
-      .insert([{ name, email, role: assignedRole, password_hash }])
+      .insert([{ id: newId, name, email, role: assignedRole, password_hash }])
       .select()
       .single();
 
