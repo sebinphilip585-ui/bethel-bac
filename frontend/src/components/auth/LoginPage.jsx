@@ -18,14 +18,13 @@ export default function LoginPage() {
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
-    // Fetch initial stats
-    fetch('http://localhost:5000/api/auth/stats')
+    fetch('https://bethel-bac-production.up.railway.app/api/auth/stats')
       .then(res => res.json())
       .then(data => setPendingCount(data.pendingBookings || 0))
       .catch(console.error);
 
     // Listen to public stream for live updates
-    const source = new EventSource('http://localhost:5000/api/notifications/stream');
+    const source = new EventSource('https://bethel-bac-production.up.railway.app/api/notifications/stream');
     source.onmessage = (event) => {
       try {
         const notif = JSON.parse(event.data);
