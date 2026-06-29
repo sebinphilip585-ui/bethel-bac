@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { supabase } from '../database/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
 import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'bethelmeadows-super-secret-key-987';
