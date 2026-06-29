@@ -330,7 +330,8 @@ export function DataProvider({ children }) {
     if (!token || !isAdminPage) return;
 
     // Connect to Notifications SSE stream
-    const eventSource = new EventSource(`/api/notifications/stream?token=${token}`);
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    const eventSource = new EventSource(`${baseUrl}/api/notifications/stream?token=${token}`);
 
     eventSource.onmessage = (event) => {
       try {
