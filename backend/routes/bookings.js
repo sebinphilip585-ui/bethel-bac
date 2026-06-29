@@ -200,16 +200,12 @@ router.post('/', async (req, res) => {
     const finalAmountPaid = parseFloat(amountPaid) || 0;
     const finalTotalAmount = parseFloat(totalAmount) || 0;
     
-    let finalStatus = 'pending';
+    let finalStatus = 'confirmed';
     let pStatus = paymentStatus || 'pending';
     if (finalAmountPaid >= finalTotalAmount && finalTotalAmount > 0) {
       pStatus = 'paid';
-      finalStatus = 'confirmed';
     } else if (finalAmountPaid > 0) {
       pStatus = 'partial';
-      finalStatus = 'confirmed';
-    } else if (pStatus === 'paid') {
-      finalStatus = 'confirmed';
     }
 
     const source = req.user ? 'staff' : 'direct';
