@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
       .select(`
         id, room_number, floor, status, active, room_type_id,
         room_types (
-          id, name, description, base_price, capacity, size, bed_type, facilities, images
+          id, name, description, base_price, max_guests, size_sqft, bed_type, facilities, images
         )
       `)
       .order('room_number', { ascending: true });
