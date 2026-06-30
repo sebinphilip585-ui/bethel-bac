@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../../contexts/DataContext';
 import { format } from 'date-fns';
-import { Search, MapPin, Calendar, Clock, User, CheckCircle } from 'lucide-react';
+import { Search, MapPin, Calendar, Clock, User, CreditCard, Info } from 'lucide-react';
 
 export default function GuestPanel() {
   const { bookings } = useData();
@@ -132,6 +132,40 @@ export default function GuestPanel() {
               </div>
             </div>
 
+            {/* Financial Details */}
+            <div style={{ borderTop: '1px solid var(--color-gray-200)', paddingTop: '24px', marginTop: '24px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CreditCard size={16} /> Financial Overview
+              </h3>
+              <div style={{ background: 'var(--color-white)', border: '1px solid var(--color-gray-200)', borderRadius: '12px', padding: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '14px' }}>
+                  <span style={{ color: 'var(--color-gray-600)' }}>Total Booking Amount</span>
+                  <span style={{ fontWeight: 600 }}>₹{result.total_amount?.toLocaleString() || '0'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '14px' }}>
+                  <span style={{ color: 'var(--color-gray-600)' }}>Amount Paid</span>
+                  <span style={{ fontWeight: 600, color: '#10b981' }}>₹{result.amount_paid?.toLocaleString() || '0'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px dashed var(--color-gray-200)', fontSize: '14px' }}>
+                  <span style={{ color: 'var(--color-gray-600)' }}>Balance Due</span>
+                  <span style={{ fontWeight: 700, color: result.total_amount - (result.amount_paid || 0) > 0 ? '#ef4444' : '#10b981' }}>
+                    ₹{Math.max(0, result.total_amount - (result.amount_paid || 0)).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Special Requests */}
+            {result.special_requests && (
+              <div style={{ borderTop: '1px solid var(--color-gray-200)', paddingTop: '24px', marginTop: '24px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Info size={16} /> Special Requests
+                </h3>
+                <div style={{ background: '#fffbeb', color: '#b45309', padding: '12px 16px', borderRadius: '8px', fontSize: '14px', fontStyle: 'italic' }}>
+                  "{result.special_requests}"
+                </div>
+              </div>
+            )}
           </div>
         )}
 

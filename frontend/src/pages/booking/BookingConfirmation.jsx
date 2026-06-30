@@ -10,6 +10,12 @@ export default function BookingConfirmation() {
   const { addToast } = useData();
   const [showEmailPreview, setShowEmailPreview] = useState(false);
 
+  useEffect(() => {
+    if (state && state.bookingId && state.guestEmail) {
+      addToast(`📧 Booking confirmation email sent immediately to ${state.guestEmail}!`, 'success', 8000);
+    }
+  }, [state, addToast]);
+
   if (!state) return <Navigate to="/booking" replace />;
 
   const {
@@ -17,12 +23,6 @@ export default function BookingConfirmation() {
     guests, guestName, guestEmail, guestPhone, totalAmount, pricePerNight,
     paymentStatus, paymentMethod, paymentSource
   } = state;
-
-  useEffect(() => {
-    if (bookingId && guestEmail) {
-      addToast(`📧 Booking confirmation email sent immediately to ${guestEmail}!`, 'success', 8000);
-    }
-  }, [bookingId, guestEmail]);
 
   return (
     <>

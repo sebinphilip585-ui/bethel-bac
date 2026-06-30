@@ -11,6 +11,11 @@ export default function ReservationList() {
   const [collectMethod, setCollectMethod] = useState('UPI');
   const [collectSource, setCollectSource] = useState('');
   const [autoCheckInAfterPayment, setAutoCheckInAfterPayment] = useState(false);
+
+  // Early Checkout Admin Verification State
+  const [earlyCheckoutBookingId, setEarlyCheckoutBookingId] = useState(null);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminPasswordError, setAdminPasswordError] = useState('');
   
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -574,7 +579,18 @@ export default function ReservationList() {
                             )
                           )}
                           {b.status === 'checked_in' && (
-                            <button className="btn btn-primary btn-sm" style={{ padding: '2px 8px', fontSize: '11px' }} onClick={() => checkOut(b.id)}>
+                            <button className="btn btn-primary btn-sm" style={{ padding: '2px 8px', fontSize: '11px' }} onClick={() => {
+                              const checkOutDateStr = format(parseLocalDate(b.check_out), 'yyyy-MM-dd');
+                              const todayStr = format(new Date(), 'yyyy-MM-dd');
+                              if (checkOutDateStr > todayStr) {
+                                // Early check-out requires admin password
+                                setEarlyCheckoutBookingId(b.id);
+                                setAdminPassword('');
+                                setAdminPasswordError('');
+                              } else {
+                                checkOut(b.id);
+                              }
+                            }}>
                               Check Out
                             </button>
                           )}
@@ -1225,6 +1241,73 @@ export default function ReservationList() {
                 </button>
                 <button type="submit" className="btn btn-primary btn-sm" style={{ minHeight: '32px' }}>
                   Record Payment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Early Check-Out Admin Password Modal Overlay */}
+      {earlyCheckoutBookingId && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(10,22,40,0.5)', backdropFilter: 'blur(4px)',
+          zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }}>
+          <div className="animate-fade-in-up" style={{
+            background: 'var(--color-white)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: '420px',
+            boxShadow: 'var(--shadow-2xl)', border: '1px solid var(--color-gray-200)', overflow: 'hidden'
+          }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '16px 20px', borderBottom: '1px solid var(--color-gray-200)', background: '#fffbeb'
+            }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', color: '#d97706', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={18} /> Admin Verification Required
+              </h3>
+              <button onClick={() => setEarlyCheckoutBookingId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-gray-500)' }}>
+                <XIcon size={18} />
+              </button>
+            </div>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (adminPassword === 'admin123') {
+                await checkOut(earlyCheckoutBookingId);
+                setEarlyCheckoutBookingId(null);
+              } else {
+                setAdminPasswordError('Incorrect admin password.');
+              }
+            }} style={{ padding: '20px' }}>
+              <p style={{ fontSize: '14px', color: 'var(--color-gray-600)', marginBottom: '16px' }}>
+                This guest is checking out <strong>early</strong> (before their scheduled check-out date). 
+                Please enter the admin password to authorize this action.
+              </p>
+              
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label">Admin Password</label>
+                <input
+                  type="password"
+                  className="form-input"
+                  placeholder="Enter admin password (admin123)"
+                  value={adminPassword}
+                  onChange={(e) => {
+                    setAdminPassword(e.target.value);
+                    setAdminPasswordError('');
+                  }}
+                  required
+                />
+                {adminPasswordError && (
+                  <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>{adminPasswordError}</div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+                <button type="button" className="btn btn-outline btn-sm" style={{ minHeight: '32px' }} onClick={() => setEarlyCheckoutBookingId(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm" style={{ minHeight: '32px' }}>
+                  Authorize & Check Out
                 </button>
               </div>
             </form>

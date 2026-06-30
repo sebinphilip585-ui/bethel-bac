@@ -500,12 +500,29 @@ textarea.form-input {
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-xl);
+}
+
+.glass-nav {
+  background: rgba(12, 26, 46, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
 }
 
 /* ============================================================
@@ -557,15 +574,20 @@ textarea.form-input {
    STAT CARDS (Dashboard)
    ============================================================ */
 .stat-card {
-  background: var(--color-white);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-xl);
   padding: var(--space-6);
-  border: 1px solid var(--color-gray-200);
-  transition: border-color var(--transition-fast);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  transition: all var(--transition-normal);
 }
 
 .stat-card:hover {
   border-color: var(--color-gold);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(197, 164, 109, 0.15);
 }
 
 .stat-card-icon {
