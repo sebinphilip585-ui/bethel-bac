@@ -327,10 +327,9 @@ export default function HomePage() {
                 width: '220px', 
                 height: '220px', 
                 background: 'white',
-                border: '6px solid white',
+                border: '1px solid var(--color-gold-light)',
                 boxShadow: '0 15px 35px rgba(0,0,0,0.12)',
                 padding: '4px',
-                border: '1px solid var(--color-gold-light)',
                 overflow: 'hidden'
               }}>
                 <img 

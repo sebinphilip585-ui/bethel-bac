@@ -389,7 +389,7 @@ export function DataProvider({ children }) {
     return () => {
       eventSource.close();
     };
-  }, [location.pathname, addNotification, addToast]);
+  }, [location.pathname, addNotification, addToast, rooms]);
 
   // ========== SIREN ALARM CONTROLS ==========
   const startAlarmSound = useCallback(() => {

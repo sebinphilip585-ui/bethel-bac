@@ -53,7 +53,7 @@ export default function BookingPage() {
     if (booking.selectedRoomType && booking.checkIn && booking.checkOut) {
       setStep(1);
     }
-  }, []);
+  }, [booking.selectedRoomType, booking.checkIn, booking.checkOut]);
 
   function handleSearch(e) {
     e.preventDefault();
