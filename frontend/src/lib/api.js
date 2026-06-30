@@ -17,9 +17,13 @@ async function apiRequest(endpoint, options = {}) {
   
   const response = await fetch(url, { ...options, headers });
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    let errorData = {};
+    if (response.status !== 204) {
+      errorData = await response.json().catch(() => ({}));
+    }
     throw new Error(errorData.error || `Request failed with status ${response.status}`);
   }
+  if (response.status === 204) return null;
   return response.json();
 }
 

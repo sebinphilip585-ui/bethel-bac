@@ -22,8 +22,7 @@ export default function NewBookingModal() {
       justifyContent: 'center',
       zIndex: 99999 // Ensure it covers everything
     }}>
-      <div style={{
-        background: 'var(--color-white)',
+      <div className="glass-panel" style={{
         borderRadius: 'var(--radius-xl)',
         padding: 'var(--space-8)',
         maxWidth: '500px',

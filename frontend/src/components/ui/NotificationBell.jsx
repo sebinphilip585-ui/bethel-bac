@@ -86,16 +86,14 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div style={{
+        <div className="glass-panel" style={{
           position: 'absolute',
           top: '100%',
           right: 0,
           width: '380px',
           maxHeight: '480px',
-          background: 'var(--color-white)',
           borderRadius: 'var(--radius-lg)',
           boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-          border: '1px solid var(--color-gray-200)',
           zIndex: 9999,
           overflow: 'hidden'
         }}>

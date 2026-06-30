@@ -50,21 +50,25 @@ export default function PMSDashboard() {
     alert("Audit Report exported (simulation)");
   };
 
-  const StatCard = ({ title, value, icon: Icon, color, delay }) => (
+  const StatCard = ({ title, value, icon: Icon, color, delay, to }) => (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
-      className="saas-card"
-      style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px' }}
     >
-      <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `rgba(${color}, 0.1)`, color: `rgb(${color})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Icon size={24} />
-      </div>
-      <div>
-        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>{title}</div>
-        <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>{value}</div>
-      </div>
+      <Link 
+        to={to}
+        className="saas-card glass-panel hover-lift"
+        style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px', textDecoration: 'none', height: '100%' }}
+      >
+        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `rgba(${color}, 0.1)`, color: `rgb(${color})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon size={24} />
+        </div>
+        <div>
+          <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>{title}</div>
+          <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '4px' }}>{value}</div>
+        </div>
+      </Link>
     </motion.div>
   );
 
@@ -100,19 +104,19 @@ export default function PMSDashboard() {
 
       {/* Main KPI Grid - 5 columns */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-        <StatCard title="Today's Arrivals" value={todayArrivals.length} icon={DoorOpen} color="59, 130, 246" delay={0.05} />
-        <StatCard title="Tomorrow's Arrivals" value={tomorrowArrivals.length} icon={CalendarCheck} color="139, 92, 246" delay={0.1} />
-        <StatCard title="Upcoming (7 Days)" value={upcomingArrivals.length} icon={Activity} color="245, 158, 11" delay={0.15} />
-        <StatCard title="Current Guests" value={activeGuests} icon={Users} color="16, 185, 129" delay={0.2} />
-        <StatCard title="Today's Departures" value={todayDepartures.length} icon={DoorClosed} color="239, 68, 68" delay={0.25} />
+        <StatCard title="Today's Arrivals" value={todayArrivals.length} icon={DoorOpen} color="59, 130, 246" delay={0.05} to="/admin/reservations" />
+        <StatCard title="Tomorrow's Arrivals" value={tomorrowArrivals.length} icon={CalendarCheck} color="139, 92, 246" delay={0.1} to="/admin/reservations" />
+        <StatCard title="Upcoming (7 Days)" value={upcomingArrivals.length} icon={Activity} color="245, 158, 11" delay={0.15} to="/admin/reservations" />
+        <StatCard title="Current Guests" value={activeGuests} icon={Users} color="16, 185, 129" delay={0.2} to="/admin/reservations" />
+        <StatCard title="Today's Departures" value={todayDepartures.length} icon={DoorClosed} color="239, 68, 68" delay={0.25} to="/admin/reservations" />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-        <StatCard title="Today's Revenue" value={`₹${stats.todayRevenue.toLocaleString()}`} icon={TrendingUp} color="16, 185, 129" delay={0.3} />
-        <StatCard title="Occupancy Rate" value={`${occupancyRate}%`} icon={Activity} color="59, 130, 246" delay={0.35} />
-        <StatCard title="Occupied Rooms" value={occupiedRooms} icon={BedDouble} color="239, 68, 68" delay={0.4} />
-        <StatCard title="Rooms (Cleaning)" value={cleaningRooms} icon={Settings} color="245, 158, 11" delay={0.45} />
-        <StatCard title="Available Rooms" value={availableRooms} icon={BedDouble} color="16, 185, 129" delay={0.5} />
+        <StatCard title="Today's Revenue" value={`₹${stats.todayRevenue.toLocaleString()}`} icon={TrendingUp} color="16, 185, 129" delay={0.3} to="/admin/revenue" />
+        <StatCard title="Occupancy Rate" value={`${occupancyRate}%`} icon={Activity} color="59, 130, 246" delay={0.35} to="/admin/rooms" />
+        <StatCard title="Occupied Rooms" value={occupiedRooms} icon={BedDouble} color="239, 68, 68" delay={0.4} to="/admin/rooms" />
+        <StatCard title="Rooms (Cleaning)" value={cleaningRooms} icon={Settings} color="245, 158, 11" delay={0.45} to="/admin/rooms" />
+        <StatCard title="Available Rooms" value={availableRooms} icon={BedDouble} color="16, 185, 129" delay={0.5} to="/admin/rooms" />
       </div>
 
       {/* Deep Dive Grid */}

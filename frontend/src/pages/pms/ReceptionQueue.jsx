@@ -25,9 +25,11 @@ export default function ReceptionQueue() {
   const handleCreate = async () => {
     if (!formData.guest_name) return;
     
-    // Generate token number (e.g., A-101)
+    // Generate token number (e.g., A-101) sequentially based on today's items
     const prefix = formData.purpose === 'check_in' ? 'I' : formData.purpose === 'check_out' ? 'O' : 'Q';
-    const number = Math.floor(100 + Math.random() * 900);
+    const todaysItems = digitalQueue.filter(q => new Date(q.joined_at || q.created_at || Date.now()).toDateString() === new Date().toDateString());
+    const count = todaysItems.length;
+    const number = 100 + count + 1;
     const token = `${prefix}-${number}`;
 
     await addQueueItem({
@@ -60,7 +62,7 @@ export default function ReceptionQueue() {
       <motion.div 
         layout
         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-        className="saas-card" style={{ padding: '16px', marginBottom: '12px', borderLeft: `4px solid ${priorityColors[item.priority] || '#3b82f6'}` }}
+        className="saas-card glass-panel" style={{ padding: '16px', marginBottom: '12px', borderLeft: `4px solid ${priorityColors[item.priority] || '#3b82f6'}` }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>

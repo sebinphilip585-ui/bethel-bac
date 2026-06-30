@@ -436,13 +436,19 @@ export default function ReservationList() {
                     const todaysCheckIns = [];
                     const tomorrowsArrivals = [];
                     const upcomingStays = [];
+                    const todaysCheckOuts = [];
                     const activeStays = [];
                     const otherBookings = [];
 
                     filtered.forEach(b => {
                       const checkInDateStr = format(parseLocalDate(b.check_in), 'yyyy-MM-dd');
+                      const checkOutDateStr = format(parseLocalDate(b.check_out), 'yyyy-MM-dd');
                       if (b.status === 'checked_in') {
-                        activeStays.push(b);
+                        if (checkOutDateStr === todayStr) {
+                          todaysCheckOuts.push(b);
+                        } else {
+                          activeStays.push(b);
+                        }
                       } else if (b.status === 'confirmed' || b.status === 'pending') {
                         if (checkInDateStr === todayStr) todaysCheckIns.push(b);
                         else if (checkInDateStr === tomorrowStr) tomorrowsArrivals.push(b);
@@ -597,6 +603,7 @@ export default function ReservationList() {
 
                     return (
                       <>
+                        {renderGroup("Priority Check-Outs (Today)", todaysCheckOuts, 'rgba(239, 68, 68, 0.1)', 'badge-error')}
                         {renderGroup("Today's Check-ins", todaysCheckIns, 'rgba(16, 185, 129, 0.1)', 'badge-success')}
                         {renderGroup("Tomorrow's Arrivals", tomorrowsArrivals, 'rgba(59, 130, 246, 0.1)', 'badge-info')}
                         {renderGroup("Upcoming Stays", upcomingStays, 'rgba(245, 158, 11, 0.1)', 'badge-warning')}

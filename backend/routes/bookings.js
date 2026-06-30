@@ -234,7 +234,7 @@ router.post('/', async (req, res) => {
       const { createNotification } = await import('./notifications.js');
       createNotification(
         'New Booking Received',
-        `Booking ${newBooking.id.substring(0, 8)} created for ${guestName} (${finalBooking.roomType}).`,
+        `Booking ${newBooking.id} created for ${guestName}. Room: ${finalBooking.roomType}, Dates: ${checkIn} to ${checkOut}, Total: ₹${finalTotalAmount}`,
         'high', 'new_booking', '/admin/reservations'
       );
     } catch (e) {
