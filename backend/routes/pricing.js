@@ -60,6 +60,30 @@ router.put('/rules/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// PATCH /api/pricing/rules/:id/toggle - Toggle rule active status
+router.patch('/rules/:id/toggle', authenticateToken, async (req, res) => {
+  try {
+    const { data: current } = await supabase
+      .from('pricing_rules')
+      .select('active')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!current) return res.status(404).json({ error: 'Rule not found' });
+
+    const { error } = await supabase
+      .from('pricing_rules')
+      .update({ active: !current.active })
+      .eq('id', req.params.id);
+
+    if (error) throw error;
+    res.json({ success: true, active: !current.active });
+  } catch (err) {
+    console.error('Error toggling rule:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // DELETE /api/pricing/rules/:id
 router.delete('/rules/:id', authenticateToken, async (req, res) => {
   try {
@@ -126,6 +150,30 @@ router.delete('/offers/:id', authenticateToken, async (req, res) => {
     res.status(204).send();
   } catch (err) {
     console.error('Error deleting offer:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /api/pricing/offers/:id/toggle - Toggle offer active status
+router.patch('/offers/:id/toggle', authenticateToken, async (req, res) => {
+  try {
+    const { data: current } = await supabase
+      .from('special_offers')
+      .select('active')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!current) return res.status(404).json({ error: 'Offer not found' });
+
+    const { error } = await supabase
+      .from('special_offers')
+      .update({ active: !current.active })
+      .eq('id', req.params.id);
+
+    if (error) throw error;
+    res.json({ success: true, active: !current.active });
+  } catch (err) {
+    console.error('Error toggling offer:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

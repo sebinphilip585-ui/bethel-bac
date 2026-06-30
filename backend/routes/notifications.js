@@ -67,8 +67,8 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/notifications/:id/read
-router.put('/:id/read', authenticateToken, async (req, res) => {
+// PATCH /api/notifications/:id/read
+router.patch('/:id/read', authenticateToken, async (req, res) => {
   try {
     const { error } = await supabase
       .from('notifications')
@@ -83,8 +83,8 @@ router.put('/:id/read', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/notifications/read-all
-router.put('/read-all', authenticateToken, async (req, res) => {
+// PATCH /api/notifications/read-all
+router.patch('/read-all', authenticateToken, async (req, res) => {
   try {
     const { error } = await supabase
       .from('notifications')

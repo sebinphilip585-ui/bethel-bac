@@ -82,4 +82,32 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// PATCH /api/guests/:id - Update guest details
+router.patch('/:id', authenticateToken, async (req, res) => {
+  try {
+    const updates = { ...req.body };
+    const guestId = req.params.id;
+
+    // Remove any undefined values
+    Object.keys(updates).forEach(key => updates[key] === undefined && delete updates[key]);
+
+    if (Object.keys(updates).length > 0) {
+      const { data: updatedGuest, error } = await supabase
+        .from('guests')
+        .update(updates)
+        .eq('id', guestId)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      res.json(updatedGuest);
+    } else {
+      res.status(400).json({ error: 'No fields to update' });
+    }
+  } catch (err) {
+    console.error('Error updating guest:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

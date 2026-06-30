@@ -89,7 +89,36 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// DELETE /api/users/:id
+// PATCH /api/users/:id/toggle
+router.patch('/:id/toggle', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { data: current } = await supabase
+      .from('profiles')
+      .select('active')
+      .eq('id', req.params.id)
+      .single();
+
+    if (!current) return res.status(404).json({ error: 'User not found' });
+
+    // Prevent deactivating oneself
+    if (req.params.id === req.user.id) {
+      return res.status(400).json({ error: 'Cannot deactivate your own account' });
+    }
+
+    const { data: updatedUser, error } = await supabase
+      .from('profiles')
+      .update({ active: !current.active, updated_at: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .select('id, name, email, role, phone, active')
+      .single();
+
+    if (error) throw error;
+    res.json(updatedUser);
+  } catch (err) {
+    console.error('Error toggling user:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     // Prevent self-deletion

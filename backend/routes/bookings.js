@@ -263,22 +263,61 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/bookings/:id
-router.put('/:id', authenticateToken, async (req, res) => {
+// PATCH /api/bookings/:id (Comprehensive update used by frontend)
+router.patch('/:id', authenticateToken, async (req, res) => {
   try {
-    const { room_id, check_in, check_out, status, notes } = req.body;
+    const updates = { ...req.body };
+    const bookingId = req.params.id;
     
-    await supabase.from('bookings').update({
-      room_id: room_id || null, check_in, check_out, status, notes: notes || null
-    }).eq('id', req.params.id);
+    // Fetch current booking state to handle side-effects like room status
+    const { data: current } = await supabase.from('bookings').select('status, room_id, total_amount, amount_paid').eq('id', bookingId).single();
+    if (!current) return res.status(404).json({ error: 'Booking not found' });
 
-    if (room_id && status === 'checked_in') {
-      await supabase.from('rooms').update({ status: 'occupied' }).eq('id', room_id);
+    // Handle timestamps for status changes
+    if (updates.status) {
+      if (updates.status === 'checked_in' && current.status !== 'checked_in') {
+        updates.actual_check_in = new Date().toISOString();
+      } else if (updates.status === 'checked_out' && current.status !== 'checked_out') {
+        updates.actual_check_out = new Date().toISOString();
+      }
     }
 
-    const updated = await getFullBooking(req.params.id);
+    // Handle payment status auto-calc if not explicitly provided but amount_paid is updated
+    if (updates.amount_paid !== undefined && !updates.payment_status) {
+       const newTotal = updates.total_amount !== undefined ? updates.total_amount : current.total_amount;
+       if (updates.amount_paid >= newTotal && newTotal > 0) updates.payment_status = 'paid';
+       else if (updates.amount_paid > 0) updates.payment_status = 'partial';
+       else updates.payment_status = 'pending';
+    }
+
+    // Remove any undefined values
+    Object.keys(updates).forEach(key => updates[key] === undefined && delete updates[key]);
+
+    if (Object.keys(updates).length > 0) {
+      await supabase.from('bookings').update(updates).eq('id', bookingId);
+    }
+
+    // Handle Room Status side-effects
+    const targetRoomId = updates.room_id || current.room_id;
+    if (targetRoomId && updates.status && updates.status !== current.status) {
+      if (updates.status === 'checked_in') {
+        await supabase.from('rooms').update({ status: 'occupied' }).eq('id', targetRoomId);
+      } else if (updates.status === 'checked_out' || updates.status === 'cancelled') {
+        await supabase.from('rooms').update({ status: 'cleaning' }).eq('id', targetRoomId);
+      }
+    }
+
+    if (updates.status && updates.status !== current.status) {
+      try {
+        const { createNotification } = await import('./notifications.js');
+        createNotification('Booking Update', `Booking ${bookingId.substring(0,8)} status changed to ${updates.status}`, 'low', 'booking', '/admin/reservations');
+      } catch(e) {}
+    }
+
+    const updated = await getFullBooking(bookingId);
     res.json(updated);
   } catch (err) {
+    console.error('Error updating booking (PATCH):', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

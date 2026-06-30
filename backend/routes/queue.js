@@ -49,6 +49,28 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/queue/:id
+router.put('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { token_number, guest_name, purpose, priority, notes } = req.body;
+    
+    const { data: updatedEntry, error } = await supabase
+      .from('digital_queue')
+      .update({
+        token_number, guest_name, purpose, priority: priority || 'normal', notes: notes || null
+      })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(updatedEntry);
+  } catch (err) {
+    console.error('Error updating queue item:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // PUT /api/queue/:id/status
 router.put('/:id/status', authenticateToken, async (req, res) => {
   try {

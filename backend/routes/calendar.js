@@ -43,6 +43,29 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/calendar/:id
+router.put('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { title, start_time, end_time, type, description, color } = req.body;
+    
+    const { data: updatedEvent, error } = await supabase
+      .from('calendar_events')
+      .update({
+        title, start_time, end_time, type: type || 'meeting',
+        description: description || null, color: color || '#3b82f6'
+      })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(updatedEvent);
+  } catch (err) {
+    console.error('Error updating event:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // DELETE /api/calendar/:id
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {

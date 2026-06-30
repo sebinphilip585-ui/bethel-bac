@@ -106,8 +106,8 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/rooms/:id/status - Update room status
-router.put('/:id/status', authenticateToken, async (req, res) => {
+// PATCH /api/rooms/:id/status - Update room status
+router.patch('/:id/status', authenticateToken, async (req, res) => {
   const { status } = req.body;
   try {
     const { error } = await supabase
