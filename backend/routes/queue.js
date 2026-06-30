@@ -93,4 +93,20 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
   }
 });
 
+// DELETE /api/queue/:id
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('digital_queue')
+      .delete()
+      .eq('id', req.params.id);
+
+    if (error) throw error;
+    res.status(204).send();
+  } catch (err) {
+    console.error('Error deleting queue item:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

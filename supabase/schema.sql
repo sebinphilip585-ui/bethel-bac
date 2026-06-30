@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS pricing_rules (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   name TEXT NOT NULL,
   type TEXT NOT NULL CHECK (type IN ('weekend', 'season', 'occupancy', 'special')),
-  multiplier DECIMAL(5,2) NOT NULL DEFAULT 1.0,git commit -m "Add expected check-in and check-out times to booking engine"
+  multiplier DECIMAL(5,2) NOT NULL DEFAULT 1.0,
   start_date DATE,
   end_date DATE,
   threshold INTEGER, -- for occupancy rules

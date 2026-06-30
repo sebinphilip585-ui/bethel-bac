@@ -346,10 +346,9 @@ export function DataProvider({ children }) {
         });
 
         // Trigger alarm and popup for bookings
-        if (notif.type === 'booking') {
-          // If the message contains booking ID, we could extract it, but let's just trigger sound
+        if (notif.type === 'new_booking') {
           addToast(`🔔 ${notif.title}: ${notif.message}`, 'success', 10000);
-          setUnacknowledgedBookings(prev => [...prev, notif.id]);
+          setUnacknowledgedBookings(prev => [...prev, notif]);
 
           // Force a silent background refresh of bookings to get the new booking data
           api.getBookings().then(dbBookings => {
@@ -365,6 +364,8 @@ export function DataProvider({ children }) {
             }
           }).catch(console.error);
 
+        } else if (notif.type === 'booking_update' || notif.type === 'booking') {
+          addToast(`📝 ${notif.title}: ${notif.message}`, 'info', 5000);
         } else if (notif.type === 'expense') {
           addToast(`💸 ${notif.title}: ${notif.message}`, 'info', 7000);
           // Refresh expenses
@@ -779,14 +780,16 @@ export function DataProvider({ children }) {
 
   const updateRoomStatus = useCallback(async (roomId, status) => {
     try {
-      const updated = await api.updateRoomStatus(roomId, status);
-      setRooms(prev => prev.map(r => r.id === roomId ? updated : r));
-      addToast(`Room ${updated.room_number} status → ${status}`, 'info');
+      await api.updateRoomStatus(roomId, status);
+      setRooms(prev => prev.map(r => r.id === roomId ? { ...r, status } : r));
+      // find the room for the toast
+      const room = rooms.find(r => r.id === roomId);
+      addToast(`Room ${room?.room_number || ''} status → ${status}`, 'info');
     } catch (err) {
-      console.error("Error updating room status:", err);
-      addToast(`Failed to update room status: ${err.message}`, 'error');
+      console.error("Failed to update room status", err);
+      addToast("Failed to update room status", "error");
     }
-  }, [addToast]);
+  }, [addToast, rooms]);
 
   // ========== HOUSEKEEPING ==========
   const markRoomClean = useCallback((roomId) => {

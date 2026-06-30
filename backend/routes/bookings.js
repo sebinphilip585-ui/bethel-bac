@@ -235,7 +235,7 @@ router.post('/', async (req, res) => {
       createNotification(
         'New Booking Received',
         `Booking ${newBooking.id.substring(0, 8)} created for ${guestName} (${finalBooking.roomType}).`,
-        'high', 'booking', '/admin/reservations'
+        'high', 'new_booking', '/admin/reservations'
       );
     } catch (e) {
       console.error('Notification failed', e);
@@ -310,7 +310,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     if (updates.status && updates.status !== current.status) {
       try {
         const { createNotification } = await import('./notifications.js');
-        createNotification('Booking Update', `Booking ${bookingId.substring(0,8)} status changed to ${updates.status}`, 'low', 'booking', '/admin/reservations');
+        createNotification('Booking Update', `Booking ${bookingId.substring(0,8)} status changed to ${updates.status}`, 'low', 'booking_update', '/admin/reservations');
       } catch(e) {}
     }
 
@@ -348,7 +348,7 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
 
     try {
       const { createNotification } = await import('./notifications.js');
-      createNotification('Booking Update', `Booking ${bookingId.substring(0,8)} status changed to ${status}`, 'low', 'booking', '/admin/reservations');
+      createNotification('Booking Update', `Booking ${bookingId.substring(0,8)} status changed to ${status}`, 'low', 'booking_update', '/admin/reservations');
     } catch(e) {}
 
     const updated = await getFullBooking(bookingId);

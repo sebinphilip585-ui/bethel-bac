@@ -68,10 +68,19 @@ export default function NewBookingModal() {
         <p style={{
           fontSize: 'var(--text-lg)',
           color: '#475569',
-          marginBottom: 'var(--space-8)'
+          marginBottom: 'var(--space-4)'
         }}>
           You have <strong style={{ color: '#dc2626', fontSize: 'var(--text-xl)' }}>{unacknowledgedBookings.length}</strong> new direct booking(s) pending your review.
         </p>
+
+        <div style={{ marginBottom: 'var(--space-8)', textAlign: 'left', background: '#f8fafc', padding: '12px', borderRadius: '8px', maxHeight: '150px', overflowY: 'auto' }}>
+          {unacknowledgedBookings.map((notif, idx) => (
+            <div key={idx} style={{ marginBottom: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px', fontSize: '14px' }}>
+              <strong>{notif.title}</strong><br/>
+              {notif.message}
+            </div>
+          ))}
+        </div>
 
         <button 
           onClick={handleAcknowledgeAll}
