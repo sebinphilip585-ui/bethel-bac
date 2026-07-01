@@ -173,6 +173,72 @@ export default function HomePage() {
           color: #cda252;
           background: rgba(255,255,255,0.05);
         }
+
+        /* Responsive Search Bar Container */
+        .hero-search-wrapper {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: white;
+          border-top: 1px solid rgba(205, 162, 82, 0.3);
+          box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+          z-index: 10;
+        }
+
+        .hero-search-form {
+          max-width: 1200px;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: 1.2fr 1fr 1fr 1fr 0.8fr;
+          align-items: stretch;
+        }
+
+        .search-field-item {
+          padding: 16px 24px;
+          border-right: 1px solid #eee;
+        }
+
+        .search-submit-btn {
+          background: #cda252;
+          color: #0c251f;
+          border: none;
+          font-weight: 600;
+          font-size: 14px;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: all 0.3s;
+          padding: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .search-submit-btn:hover {
+          background: #0c251f;
+          color: #cda252;
+        }
+
+        @media (max-width: 900px) {
+          .hero-search-wrapper {
+            position: relative;
+            bottom: auto;
+            border-top: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+          }
+          .hero-search-form {
+            grid-template-columns: 1fr;
+          }
+          .search-field-item {
+            border-right: none;
+            border-bottom: 1px solid #eee;
+            padding: 16px 20px;
+          }
+          .luxury-frame-br {
+            bottom: 40px !important;
+          }
+        }
       `}</style>
 
       {/* Hero Section */}
@@ -185,7 +251,7 @@ export default function HomePage() {
         ))}
         
         <div className="luxury-frame luxury-frame-tl" />
-        <div className="luxury-frame luxury-frame-br" style={{ bottom: '100px' }} />
+        <div className="luxury-frame luxury-frame-br" />
 
         <div className="container" style={{ position: 'relative', zIndex: 2, textAlign: 'center', color: 'white', maxWidth: '850px', transform: 'translateY(-40px)' }}>
           <p style={{ color: '#cda252', letterSpacing: '6px', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '24px' }}>
@@ -205,31 +271,16 @@ export default function HomePage() {
         </div>
 
         {/* Taj-style Horizontal Search Bar Widget */}
-        <div style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: 'white',
-          borderTop: '1px solid rgba(205, 162, 82, 0.3)',
-          boxShadow: '0 -10px 30px rgba(0,0,0,0.15)',
-          zIndex: 10
-        }}>
-          <form onSubmit={handleSearch} style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            display: 'grid',
-            gridTemplateColumns: '1.2fr 1fr 1fr 1fr 0.8fr',
-            alignItems: 'center'
-          }}>
-            {/* Destination */}
-            <div style={{ padding: '16px 24px', borderRight: '1px solid #eee' }}>
+        <div className="hero-search-wrapper">
+          <form onSubmit={handleSearch} className="hero-search-form">
+            {/* Location */}
+            <div className="search-field-item">
               <span style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#999', marginBottom: '4px' }}>Location</span>
               <span style={{ fontSize: '14px', fontWeight: 500, color: '#0c251f' }}>Eraviperoor, Thiruvalla</span>
             </div>
 
             {/* Check In */}
-            <div style={{ padding: '16px 24px', borderRight: '1px solid #eee' }}>
+            <div className="search-field-item">
               <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#999', marginBottom: '4px', cursor: 'pointer' }} htmlFor="hero-checkin">Check In</label>
               <input
                 id="hero-checkin"
@@ -242,7 +293,7 @@ export default function HomePage() {
             </div>
 
             {/* Check Out */}
-            <div style={{ padding: '16px 24px', borderRight: '1px solid #eee' }}>
+            <div className="search-field-item">
               <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#999', marginBottom: '4px', cursor: 'pointer' }} htmlFor="hero-checkout">Check Out</label>
               <input
                 id="hero-checkout"
@@ -255,7 +306,7 @@ export default function HomePage() {
             </div>
 
             {/* Guests */}
-            <div style={{ padding: '16px 24px', borderRight: '1px solid #eee' }}>
+            <div className="search-field-item">
               <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#999', marginBottom: '4px', cursor: 'pointer' }} htmlFor="hero-guests">Guests</label>
               <select
                 id="hero-guests"
@@ -271,22 +322,7 @@ export default function HomePage() {
             </div>
 
             {/* Search Button */}
-            <button type="submit" style={{
-              background: '#cda252',
-              color: '#0c251f',
-              height: '100%',
-              border: 'none',
-              fontWeight: 600,
-              fontSize: '14px',
-              letterSpacing: '2px',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-              transition: 'background 0.3s'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = '#0c251f'}
-            onMouseEnter={e => { e.currentTarget.style.background = '#0c251f'; e.currentTarget.style.color = '#cda252'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#cda252'; e.currentTarget.style.color = '#0c251f'; }}
-            >
+            <button type="submit" className="search-submit-btn">
               Search
             </button>
           </form>

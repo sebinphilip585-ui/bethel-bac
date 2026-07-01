@@ -7,19 +7,19 @@
    ============================================================ */
 
 :root {
-  /* Primary Colors — refined luxury forest green and metallic gold palette */
-  --color-navy: #0c251f;
-  --color-navy-light: #163d34;
-  --color-navy-dark: #061512;
-  --color-gold: #cda252;
-  --color-gold-light: #dfbe7b;
-  --color-gold-dark: #ab8135;
-  --color-gold-muted: rgba(205, 162, 82, 0.12);
-  --color-cream: #f9f6f0;
-  --color-cream-dark: #eee7da;
+  /* Primary Colors — Slate Green, Antique Gold, Eggshell White, and Dark Charcoal */
+  --color-navy: #0b211a;
+  --color-navy-light: #15382e;
+  --color-navy-dark: #05130f;
+  --color-gold: #bfa36b;
+  --color-gold-light: #d6be8c;
+  --color-gold-dark: #9c804b;
+  --color-gold-muted: rgba(191, 163, 107, 0.12);
+  --color-cream: #faf9f6;
+  --color-cream-dark: #f2ebd9;
   --color-warm-white: #fdfcf9;
-  --color-brown: #3e2e21;
-  --color-brown-light: #5c4533;
+  --color-brown: #33271d;
+  --color-brown-light: #4f3b2d;
 
   /* Neutral Colors */
   --color-white: #ffffff;
