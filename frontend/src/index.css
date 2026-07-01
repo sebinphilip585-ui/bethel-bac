@@ -7,19 +7,19 @@
    ============================================================ */
 
 :root {
-  /* Primary Colors — refined palette */
-  --color-navy: #1b3b36;
-  --color-navy-light: #2c524b;
-  --color-navy-dark: #122824;
-  --color-gold: #c5a46d;
-  --color-gold-light: #d8c49a;
-  --color-gold-dark: #a68a4e;
-  --color-gold-muted: rgba(197, 164, 109, 0.12);
-  --color-cream: #f8f5f0;
-  --color-cream-dark: #ede7dd;
-  --color-warm-white: #fdfcfa;
-  --color-brown: #4a3728;
-  --color-brown-light: #6b5240;
+  /* Primary Colors — refined luxury forest green and metallic gold palette */
+  --color-navy: #0c251f;
+  --color-navy-light: #163d34;
+  --color-navy-dark: #061512;
+  --color-gold: #cda252;
+  --color-gold-light: #dfbe7b;
+  --color-gold-dark: #ab8135;
+  --color-gold-muted: rgba(205, 162, 82, 0.12);
+  --color-cream: #f9f6f0;
+  --color-cream-dark: #eee7da;
+  --color-warm-white: #fdfcf9;
+  --color-brown: #3e2e21;
+  --color-brown-light: #5c4533;
 
   /* Neutral Colors */
   --color-white: #ffffff;
