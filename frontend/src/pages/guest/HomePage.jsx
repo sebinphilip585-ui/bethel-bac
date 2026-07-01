@@ -23,7 +23,7 @@ function useReveal() {
 }
 
 const HERO_IMAGES = [
-  '/images/rooms/room-living.jpg',
+  '/images/property/room.png',
   '/images/rooms/room-bed.jpg',
   '/images/rooms/room-sofa.jpg',
 ];
@@ -390,6 +390,53 @@ export default function HomePage() {
                 <img src={img.src} alt={img.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Marquee & Facade Banner */}
+      <section className="section" style={{ background: '#fdfcf9', paddingBottom: '0' }}>
+        <style>{`
+          @keyframes marqueeAnim {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+          }
+          .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            background: #0c251f;
+            padding: 20px 0;
+            border-top: 1px solid #cda252;
+            border-bottom: 1px solid #cda252;
+          }
+          .marquee-content {
+            display: inline-block;
+            animation: marqueeAnim 30s linear infinite;
+            color: #cda252;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+          }
+        `}</style>
+        
+        <div className="marquee-container">
+          <div className="marquee-content">
+            ✦ Fully Furnished Apartments ✦ 24/7 Guest Support ✦ Sabarimala Pilgrim Friendly ✦ High-Speed Wi-Fi ✦ Peaceful Environment ✦ Free Parking ✦ Fully Furnished Apartments ✦ 24/7 Guest Support ✦ Sabarimala Pilgrim Friendly ✦ High-Speed Wi-Fi ✦ Peaceful Environment ✦ Free Parking ✦
+          </div>
+        </div>
+
+        <div className="reveal container" style={{ marginTop: '80px', marginBottom: '80px', maxWidth: '1000px' }}>
+          <div style={{ border: '1px solid #cda252', padding: '24px', background: 'white', boxShadow: '0 20px 40px rgba(0,0,0,0.05)' }}>
+            <img src="/images/property/facade.jpg" alt="Bethel Meadows Facade" style={{ width: '100%', height: 'auto', objectFit: 'cover' }} />
+            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+              <h3 style={{ color: '#0c251f', fontFamily: 'var(--font-heading)', fontSize: '24px', fontWeight: 600, marginBottom: '6px' }}>
+                Bethel Meadows Building Facade
+              </h3>
+              <p style={{ color: '#cda252', fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 500 }}>
+                Eraviperoor, Thiruvalla, Kerala
+              </p>
+            </div>
           </div>
         </div>
       </section>
