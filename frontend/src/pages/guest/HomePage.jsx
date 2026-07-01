@@ -180,14 +180,14 @@ export default function HomePage() {
         {HERO_IMAGES.map((img, i) => (
           <div key={i} className={`hero-slide ${i === heroIndex ? 'active' : ''}`}>
             <img src={img} alt="Bethel Meadows" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(12,37,31,0.5), rgba(12,37,31,0.85))' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(12,37,31,0.55), rgba(12,37,31,0.85))' }} />
           </div>
         ))}
         
         <div className="luxury-frame luxury-frame-tl" />
-        <div className="luxury-frame luxury-frame-br" />
+        <div className="luxury-frame luxury-frame-br" style={{ bottom: '100px' }} />
 
-        <div className="container" style={{ position: 'relative', zIndex: 2, textAlign: 'center', color: 'white', maxWidth: '850px' }}>
+        <div className="container" style={{ position: 'relative', zIndex: 2, textAlign: 'center', color: 'white', maxWidth: '850px', transform: 'translateY(-40px)' }}>
           <p style={{ color: '#cda252', letterSpacing: '6px', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '24px' }}>
             Welcome to Bethel Meadows
           </p>
@@ -198,13 +198,98 @@ export default function HomePage() {
             Premium Serviced Apartments in Eraviperoor, Thiruvalla.
           </p>
           <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/booking" className="luxury-btn">
-              Book Now <ArrowRight size={16} />
-            </Link>
-            <a href="#apartments" className="luxury-btn-outline">
-              Explore Apartments
+            <a href="#apartments" className="luxury-btn">
+              Explore Apartments <ArrowRight size={16} />
             </a>
           </div>
+        </div>
+
+        {/* Taj-style Horizontal Search Bar Widget */}
+        <div style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: 'white',
+          borderTop: '1px solid rgba(205, 162, 82, 0.3)',
+          boxShadow: '0 -10px 30px rgba(0,0,0,0.15)',
+          zIndex: 10
+        }}>
+          <form onSubmit={handleSearch} style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'grid',
+            gridTemplateColumns: '1.2fr 1fr 1fr 1fr 0.8fr',
+            alignItems: 'center'
+          }}>
+            {/* Destination */}
+            <div style={{ padding: '16px 24px', borderRight: '1px solid #eee' }}>
+              <span style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#999', marginBottom: '4px' }}>Location</span>
+              <span style={{ fontSize: '14px', fontWeight: 500, color: '#0c251f' }}>Eraviperoor, Thiruvalla</span>
+            </div>
+
+            {/* Check In */}
+            <div style={{ padding: '16px 24px', borderRight: '1px solid #eee' }}>
+              <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#999', marginBottom: '4px', cursor: 'pointer' }} htmlFor="hero-checkin">Check In</label>
+              <input
+                id="hero-checkin"
+                type="date"
+                required
+                value={searchParams.checkIn}
+                onChange={e => setSearchParams(prev => ({ ...prev, checkIn: e.target.value }))}
+                style={{ border: 'none', background: 'transparent', outline: 'none', color: '#0c251f', width: '100%', fontSize: '14px' }}
+              />
+            </div>
+
+            {/* Check Out */}
+            <div style={{ padding: '16px 24px', borderRight: '1px solid #eee' }}>
+              <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#999', marginBottom: '4px', cursor: 'pointer' }} htmlFor="hero-checkout">Check Out</label>
+              <input
+                id="hero-checkout"
+                type="date"
+                required
+                value={searchParams.checkOut}
+                onChange={e => setSearchParams(prev => ({ ...prev, checkOut: e.target.value }))}
+                style={{ border: 'none', background: 'transparent', outline: 'none', color: '#0c251f', width: '100%', fontSize: '14px' }}
+              />
+            </div>
+
+            {/* Guests */}
+            <div style={{ padding: '16px 24px', borderRight: '1px solid #eee' }}>
+              <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', color: '#999', marginBottom: '4px', cursor: 'pointer' }} htmlFor="hero-guests">Guests</label>
+              <select
+                id="hero-guests"
+                value={searchParams.guests}
+                onChange={e => setSearchParams(prev => ({ ...prev, guests: e.target.value }))}
+                style={{ border: 'none', background: 'transparent', outline: 'none', color: '#0c251f', width: '100%', fontSize: '14px', cursor: 'pointer' }}
+              >
+                <option value="1">1 Guest</option>
+                <option value="2">2 Guests</option>
+                <option value="3">3 Guests</option>
+                <option value="4">4+ Guests</option>
+              </select>
+            </div>
+
+            {/* Search Button */}
+            <button type="submit" style={{
+              background: '#cda252',
+              color: '#0c251f',
+              height: '100%',
+              border: 'none',
+              fontWeight: 600,
+              fontSize: '14px',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              transition: 'background 0.3s'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#0c251f'}
+            onMouseEnter={e => { e.currentTarget.style.background = '#0c251f'; e.currentTarget.style.color = '#cda252'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#cda252'; e.currentTarget.style.color = '#0c251f'; }}
+            >
+              Search
+            </button>
+          </form>
         </div>
       </section>
 
