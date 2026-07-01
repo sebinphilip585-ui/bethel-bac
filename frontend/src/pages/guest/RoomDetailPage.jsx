@@ -163,7 +163,7 @@ export default function RoomDetailPage() {
                 marginBottom: 'var(--space-10)'
               }}>
                 {[
-                  { icon: <Users size={22} />, value: `${room.max_guests} Guests`, label: 'Maximum' },
+                  { icon: <Users size={22} />, value: `Up to ${room.max_guests} Guests`, label: 'Maximum' },
                   { icon: <Maximize2 size={22} />, value: `${room.size_sqft} sqft`, label: 'Room Size' },
                   { icon: <BedDouble size={22} />, value: room.bed_type, label: 'Bed Type' },
                 ].map((stat, i) => (

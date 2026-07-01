@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,13 +15,13 @@ export default function Navbar() {
   }, []);
 
   const links = [
-    { name: 'Home', href: '/' },
-    { name: 'Apartments', href: '/#apartments' },
-    { name: 'Facilities', href: '/#facilities' },
-    { name: 'Gallery', href: '/#gallery' },
-    { name: 'Attractions', href: '/#attractions' },
-    { name: 'Reviews', href: '/#reviews' },
-    { name: 'Contact', href: '/#contact' },
+    { name: 'Home', href: '#' },
+    { name: 'Apartments', href: '#apartments' },
+    { name: 'Facilities', href: '#facilities' },
+    { name: 'Gallery', href: '#gallery' },
+    { name: 'Attractions', href: '#attractions' },
+    { name: 'Reviews', href: '#reviews' },
+    { name: 'Contact', href: '#contact' },
   ];
 
   return (
@@ -76,9 +75,9 @@ export default function Navbar() {
               </li>
             ))}
             <li>
-              <Link to="/booking" className={isScrolled ? 'btn-primary' : 'btn-outline'} style={{ padding: '10px 24px', fontSize: '12px' }}>
+              <a href="#book" className={isScrolled ? 'btn-primary' : 'btn-outline'} style={{ padding: '10px 24px', fontSize: '12px' }}>
                 Book Now
-              </Link>
+              </a>
             </li>
           </ul>
         </div>
@@ -131,9 +130,9 @@ export default function Navbar() {
                 </li>
               ))}
               <li style={{ marginTop: '24px' }}>
-                <Link to="/booking" className="btn-primary" style={{ width: '100%' }} onClick={() => setIsMobileOpen(false)}>
+                <a href="#book" className="btn-primary" style={{ width: '100%' }} onClick={() => setIsMobileOpen(false)}>
                   Book Now
-                </Link>
+                </a>
               </li>
             </ul>
           </motion.div>

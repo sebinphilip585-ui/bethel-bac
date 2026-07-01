@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { MapPin, Phone } from 'lucide-react';
 
 export default function Footer() {
@@ -39,10 +38,10 @@ export default function Footer() {
           <div>
             <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', marginBottom: '24px' }}>Quick Links</h4>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <li><Link to="/#about" style={{ color: 'var(--color-text-light)', fontSize: '14px' }}>About Us</Link></li>
-              <li><Link to="/#apartments" style={{ color: 'var(--color-text-light)', fontSize: '14px' }}>Our Apartments</Link></li>
-              <li><Link to="/#facilities" style={{ color: 'var(--color-text-light)', fontSize: '14px' }}>Facilities</Link></li>
-              <li><Link to="/#gallery" style={{ color: 'var(--color-text-light)', fontSize: '14px' }}>Gallery</Link></li>
+              <li><a href="#about" style={{ color: 'var(--color-text-light)', fontSize: '14px' }}>About Us</a></li>
+              <li><a href="#apartments" style={{ color: 'var(--color-text-light)', fontSize: '14px' }}>Our Apartments</a></li>
+              <li><a href="#facilities" style={{ color: 'var(--color-text-light)', fontSize: '14px' }}>Facilities</a></li>
+              <li><a href="#gallery" style={{ color: 'var(--color-text-light)', fontSize: '14px' }}>Gallery</a></li>
             </ul>
           </div>
 
