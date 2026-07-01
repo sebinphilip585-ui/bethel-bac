@@ -23,6 +23,14 @@ async function seed() {
   for (let i = 0; i < roomsData.length; i++) {
     const r = roomsData[i];
     
+    const defaultImages = [
+      '/images/rooms/room-new-1.jpg',
+      '/images/rooms/room-new-2.jpg',
+      '/images/rooms/room-new-3.jpg',
+      '/images/rooms/room-new-4.jpg',
+      '/images/rooms/room-new-5.jpg'
+    ];
+
     // Create Room Type
     let type;
     const { data: insertedType, error: typeErr } = await supabase.from('room_types').insert([{
@@ -32,12 +40,15 @@ async function seed() {
       base_price: r.base_price,
       max_guests: r.max_guests,
       size_sqft: r.bhk === '1BHK' ? 600 : (r.bhk === '2BHK' ? 900 : 1200),
-      bed_type: r.bhk === '1BHK' ? '1 King Bed' : '2 King Beds'
+      bed_type: r.bhk === '1BHK' ? '1 King Bed' : '2 King Beds',
+      images: defaultImages
     }]).select().single();
 
     if (typeErr && typeErr.code === '23505') {
       const { data: existingType } = await supabase.from('room_types').select().eq('name', r.name).single();
-      type = existingType;
+      // Update existing type with new images
+      await supabase.from('room_types').update({ images: defaultImages }).eq('id', existingType.id);
+      type = { ...existingType, images: defaultImages };
     } else if (typeErr) {
       console.error('Failed to insert type:', r.name, typeErr);
       continue;

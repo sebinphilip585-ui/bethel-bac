@@ -10,9 +10,11 @@ export default function ApartmentsShowcase() {
   // Use a fallback image if room doesn't have one
   const getFallbackImage = (index) => {
     const fallbacks = [
-      'https://images.unsplash.com/photo-1598928506311-c55d40f92716?auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1502672260266-1c1e87418fd6?auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80'
+      '/images/rooms/room-new-1.jpg',
+      '/images/rooms/room-new-2.jpg',
+      '/images/rooms/room-new-3.jpg',
+      '/images/rooms/room-new-4.jpg',
+      '/images/rooms/room-new-5.jpg'
     ];
     return fallbacks[index % fallbacks.length];
   };
