@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useData } from '../../contexts/DataContext';
-import { Wifi, Coffee, Shield, Star, Users, Maximize2, ArrowRight, BedDouble } from 'lucide-react';
+import { Users, Maximize2, ArrowRight, BedDouble, Check } from 'lucide-react';
 
 function useReveal() {
   const ref = useRef(null);
@@ -17,13 +17,48 @@ function useReveal() {
   return ref;
 }
 
+const APARTMENTS_DATA = [
+  { name: 'Beckingham', bhk: '2BHK', price: 4500, img: '/images/rooms/room-living.jpg', size: 600, beds: '2 King Beds', desc: 'A luxurious 2BHK suite designed for elegance and comfort. Enjoy spacious living with premium furnishings.' },
+  { name: 'Beverly Hills', bhk: '2BHK', price: 4500, img: '/images/rooms/room-bed.jpg', size: 600, beds: '2 King Beds', desc: 'An exquisite 2BHK apartment offering panoramic views and top-tier hospitality for a memorable stay.' },
+  { name: 'Belrose', bhk: '1BHK', price: 2500, img: '/images/rooms/room-sofa.jpg', size: 350, beds: '1 King Bed', desc: 'A cozy and elegant 1BHK unit perfect for couples or solo travelers seeking a peaceful retreat.' },
+  { name: 'Blooms Bay', bhk: '2BHK', price: 4500, img: '/images/rooms/room-tv.jpg', size: 600, beds: '2 King Beds', desc: 'A modern 2BHK suite with a spacious living area and premium furnishings for an elevated experience.' },
+  { name: 'Blue Bell', bhk: '1BHK', price: 2500, img: '/images/rooms/room-ac.jpg', size: 350, beds: '1 King Bed', desc: 'A serene 1BHK unit combining simplicity with luxury, offering a restful stay amidst nature.' },
+  { name: 'Beehive', bhk: '1BHK', price: 2500, img: '/images/rooms/room-living.jpg', size: 350, beds: '1 King Bed', desc: 'A warm and inviting 1BHK suite equipped with all modern amenities for a comfortable extended stay.' },
+  { name: 'Belarus', bhk: '3BHK', price: 6500, img: '/images/rooms/room-bed.jpg', size: 900, beds: '3 King Beds', desc: 'Our grandest 3BHK presidential suite offering ultimate luxury, expansive space, and elite amenities.' },
+  { name: 'Breeze Garden', bhk: '1BHK', price: 2500, img: '/images/rooms/room-sofa.jpg', size: 380, beds: '1 King Bed', desc: 'A beautiful garden-facing 1BHK apartment filled with natural light and peaceful atmosphere.' },
+  { name: 'Brook Hills', bhk: '1BHK', price: 2500, img: '/images/rooms/room-tv.jpg', size: 360, beds: '1 King Bed', desc: 'Enjoy scenic views and modern amenities in this elegantly designed 1BHK sanctuary.' },
+  { name: 'Bliss Heaven', bhk: '1BHK', price: 2500, img: '/images/rooms/room-ac.jpg', size: 350, beds: '1 King Bed', desc: 'A heavenly 1BHK retreat featuring modern aesthetic, warm lighting, and complete privacy.' },
+];
+
+const FACILITIES = [
+  'Air Conditioning', 'Fully Furnished', 'Equipped Kitchen', 'Refrigerator',
+  'Smart TV', 'High-Speed Wi-Fi', 'Attached Bathroom', 'Hot Water'
+];
+
 export default function RoomsPage() {
   const { roomTypes } = useData();
   const navigate = useNavigate();
   const containerRef = useReveal();
 
+  const handleBookNow = (apartName) => {
+    // Attempt to match the database room type ID by name
+    const dbRoom = roomTypes.find(rt => rt.name.toLowerCase().includes(apartName.toLowerCase()));
+    if (dbRoom) {
+      navigate(`/booking?room=${dbRoom.id}`);
+    } else {
+      navigate(`/booking`);
+    }
+  };
+
+  const handleViewDetails = (apartName) => {
+    const dbRoom = roomTypes.find(rt => rt.name.toLowerCase().includes(apartName.toLowerCase()));
+    if (dbRoom) {
+      navigate(`/rooms/${dbRoom.slug}`);
+    }
+  };
+
   return (
-    <div ref={containerRef} style={{ background: '#fcfbfa' }}>
+    <div ref={containerRef} style={{ background: '#fdfcf9', minHeight: '100vh' }}>
       <style>{`
         .reveal {
           opacity: 0;
@@ -34,148 +69,185 @@ export default function RoomsPage() {
           opacity: 1;
           transform: translateY(0);
         }
-        .room-img-wrapper {
-          position: relative;
+        
+        .luxury-card {
+          background: white;
+          border: 1px solid rgba(205, 162, 82, 0.15);
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           overflow: hidden;
+          position: relative;
         }
-        .room-img-wrapper img {
+        
+        .luxury-card:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 24px 48px rgba(12, 37, 31, 0.08);
+          border-color: rgba(205, 162, 82, 0.4);
+        }
+        
+        .luxury-img-container {
+          overflow: hidden;
+          position: relative;
+          height: 280px;
+        }
+        
+        .luxury-img-container img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
           transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .room-card:hover .room-img-wrapper img {
+        
+        .luxury-card:hover .luxury-img-container img {
           transform: scale(1.05);
+        }
+        
+        .apart-badge {
+          position: absolute;
+          top: 20px;
+          left: 20px;
+          background: #0c251f;
+          color: #cda252;
+          padding: 6px 16px;
+          font-size: 11px;
+          fontWeight: 700;
+          letter-spacing: 1px;
+          border: 1px solid #cda252;
+        }
+
+        .action-btn {
+          padding: 10px 20px;
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          transition: all 0.3s;
+        }
+        
+        .action-btn-primary {
+          background: #0c251f;
+          color: #cda252;
+          border: 1px solid #cda252;
+        }
+        .action-btn-primary:hover {
+          background: #cda252;
+          color: #0c251f;
+        }
+        
+        .action-btn-secondary {
+          background: transparent;
+          color: #0c251f;
+          border: 1px solid rgba(12, 37, 31, 0.2);
+        }
+        .action-btn-secondary:hover {
+          border-color: #0c251f;
+          background: rgba(12, 37, 31, 0.03);
         }
       `}</style>
 
       {/* Header */}
       <div style={{
-        background: 'linear-gradient(rgba(12, 26, 46, 0.8), rgba(12, 26, 46, 0.9)), url("/images/rooms/room-living.jpg") center/cover',
+        background: 'linear-gradient(rgba(12, 37, 31, 0.85), rgba(12, 37, 31, 0.95)), url("/images/rooms/room-bed.jpg") center/cover',
         padding: '160px 0 100px',
         textAlign: 'center',
         color: 'white'
       }}>
         <div className="container reveal">
-          <p style={{ color: 'var(--color-gold)', letterSpacing: '4px', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '16px' }}>
+          <p style={{ color: '#cda252', letterSpacing: '4px', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '16px' }}>
             Accommodations
           </p>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(2.5rem, 5vw, 4rem)', marginBottom: '24px', fontWeight: 700 }}>
-            Rooms & Suites
+            Luxury Serviced Apartments
           </h1>
-          <div style={{ width: '60px', height: '2px', background: 'var(--color-gold)', margin: '0 auto 24px' }} />
+          <div style={{ width: '60px', height: '2px', background: '#cda252', margin: '0 auto 24px' }} />
           <p style={{ maxWidth: '600px', margin: '0 auto', fontSize: '16px', color: 'rgba(255,255,255,0.8)', fontWeight: 300, lineHeight: 1.6 }}>
-            Discover our collection of thoughtfully designed rooms, each offering a perfect 
-            blend of classic charm, spacious living, and modern luxury.
+            Explore our 10 fully furnished premium suites in Thiruvalla. Beautiful layouts, A/C, fully equipped kitchen, and warm hospitality.
           </p>
         </div>
       </div>
 
-      {/* Room List */}
+      {/* Apartments Grid */}
       <section className="section-lg">
-        <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '80px' }}>
-          {roomTypes.map((room, i) => (
-            <div key={room.id} className="reveal room-card" style={{ 
-              display: 'flex', 
-              flexDirection: i % 2 === 1 ? 'row-reverse' : 'row',
-              background: 'white',
-              boxShadow: '0 20px 40px rgba(27, 59, 54, 0.05)',
-              border: '1px solid rgba(197, 164, 109, 0.1)'
-            }}>
-              {/* Image Side */}
-              <div className="room-img-wrapper" style={{ flex: '1 1 50%', minHeight: '400px' }}>
-                <img 
-                  src={room.images[0] || '/images/rooms/room-bed.jpg'} 
-                  alt={room.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} 
-                />
-                <div style={{ position: 'absolute', top: '24px', left: '24px', background: 'white', padding: '8px 16px', fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--color-navy)', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                  {room.name.includes('3BHK') ? '3BHK' : room.name.includes('2BHK') || room.max_guests >= 4 ? '2BHK' : '1BHK'}
-                </div>
-              </div>
-              
-              {/* Content Side */}
-              <div style={{ flex: '1 1 50%', padding: '64px 48px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <p style={{ color: 'var(--color-gold)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600, marginBottom: '16px' }}>
-                  <BedDouble size={14} style={{ display: 'inline', marginRight: '6px', verticalAlign: '-2px' }} />
-                  {room.bed_type} · {room.size_sqft} sq ft
-                </p>
-                
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(2rem, 3vw, 2.5rem)', color: 'var(--color-navy)', marginBottom: '24px', lineHeight: 1.1 }}>
-                  {room.name}
-                </h2>
-                
-                <p style={{ color: 'var(--color-gray-600)', lineHeight: '1.8', marginBottom: '32px', fontSize: '15px', fontWeight: 300 }}>
-                  {room.description}
-                </p>
-                
-                <div style={{ display: 'flex', gap: '24px', marginBottom: '32px', borderTop: '1px solid var(--color-gray-200)', borderBottom: '1px solid var(--color-gray-200)', padding: '16px 0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-navy)', fontSize: '14px', fontWeight: 500 }}>
-                    <Users size={18} color="var(--color-gold)" /> {room.max_guests} Guests
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-navy)', fontSize: '14px', fontWeight: 500 }}>
-                    <Maximize2 size={18} color="var(--color-gold)" /> {room.size_sqft} sqft
+        <div className="container">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '32px' }}>
+            {APARTMENTS_DATA.map((apart, idx) => (
+              <div key={idx} className="reveal luxury-card" style={{ animationDelay: `${(idx % 3) * 100}ms` }}>
+                <div className="luxury-img-container">
+                  <img src={apart.img} alt={apart.name} />
+                  <div className="apart-badge">
+                    {apart.bhk}
                   </div>
                 </div>
+                
+                <div style={{ padding: '32px' }}>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '24px', color: '#0c251f', marginBottom: '8px' }}>
+                    {apart.name}
+                  </h3>
+                  
+                  <p style={{ color: '#cda252', fontSize: '12px', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '16px' }}>
+                    {apart.beds} · {apart.size} SQ FT
+                  </p>
+                  
+                  <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px', height: '64px', overflow: 'hidden' }}>
+                    {apart.desc}
+                  </p>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '40px' }}>
-                  {room.facilities.slice(0, 6).map(f => (
-                    <span key={f} style={{ padding: '6px 16px', background: 'var(--color-gray-50)', border: '1px solid var(--color-gray-200)', fontSize: '12px', color: 'var(--color-gray-600)' }}>
-                      {f}
-                    </span>
-                  ))}
-                  {room.facilities.length > 6 && (
-                    <span style={{ padding: '6px 16px', background: 'var(--color-gold-muted)', color: 'var(--color-gold-dark)', fontSize: '12px', fontWeight: 600 }}>
-                      +{room.facilities.length - 6} more
-                    </span>
-                  )}
-                </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '24px' }}>
+                    {FACILITIES.slice(0, 4).map(f => (
+                      <span key={f} style={{ background: '#f7f4ee', color: '#0c251f', padding: '4px 10px', fontSize: '11px', fontWeight: 500 }}>
+                        {f}
+                      </span>
+                    ))}
+                  </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px' }}>
-                  <div>
-                    <span style={{ fontSize: '12px', color: 'var(--color-gray-400)', textTransform: 'uppercase', letterSpacing: '1px' }}>Starting from</span>
-                    <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-navy)' }}>
-                      ₹{room.base_price.toLocaleString()} <span style={{ fontSize: '14px', color: 'var(--color-gray-500)', fontWeight: 400 }}>/ night</span>
+                  <div style={{ borderTop: '1px solid rgba(205, 162, 82, 0.15)', paddingTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>Per Night</p>
+                      <p style={{ fontSize: '22px', fontWeight: 700, color: '#0c251f' }}>₹{apart.price.toLocaleString()}</p>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => handleViewDetails(apart.name)} className="action-btn action-btn-secondary">
+                        Details
+                      </button>
+                      <button onClick={() => handleBookNow(apart.name)} className="action-btn action-btn-primary">
+                        Book Now
+                      </button>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '16px' }}>
-                    <Link to={`/rooms/${room.slug}`} className="btn btn-outline" style={{ padding: '12px 24px' }}>
-                      Details
-                    </Link>
-                    <Link to={`/booking?room=${room.id}`} className="btn btn-primary" style={{ padding: '12px 32px' }}>
-                      Book Now
-                    </Link>
-                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
       {/* CTA */}
       <section className="reveal" style={{
-        background: 'var(--color-navy)',
+        background: '#0c251f',
         padding: '100px 0',
         textAlign: 'center',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        borderTop: '1px solid #cda252'
       }}>
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse at center, rgba(197,164,109,0.08) 0%, transparent 70%)'
+          background: 'radial-gradient(ellipse at center, rgba(205, 162, 82, 0.08) 0%, transparent 70%)'
         }} />
         <div className="container" style={{ position: 'relative' }}>
-          <p style={{ color: 'var(--color-gold)', letterSpacing: '4px', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '16px' }}>Need Help?</p>
+          <p style={{ color: '#cda252', letterSpacing: '4px', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '16px' }}>Reservations</p>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '32px', color: 'white', marginBottom: '24px' }}>
-            Can't Decide? We're Here to Help
+            Book Your Serviced Apartment
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '40px', maxWidth: '500px', margin: '0 auto 40px', fontSize: '16px', fontWeight: 300 }}>
-            Contact our reservations team and we'll help you find the perfect suite for your stay.
+            Contact our reservations team or book directly online for family, business, or Sabarimala pilgrim stays.
           </p>
           <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/contact" className="btn btn-outline-white" style={{ padding: '16px 32px' }}>
               Contact Us
             </Link>
-            <Link to="/booking" className="btn btn-primary" style={{ padding: '16px 32px' }}>
-              Book Now <ArrowRight size={16} />
+            <Link to="/booking" className="luxury-btn" style={{ padding: '16px 32px' }}>
+              Book Online <ArrowRight size={16} />
             </Link>
           </div>
         </div>
