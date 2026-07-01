@@ -7,6 +7,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import PMSLayout from './components/pms/PMSLayout';
+import FloatingContact from './components/layout/FloatingContact';
 
 // Guest Pages
 import HomePage from './pages/guest/HomePage';
@@ -65,6 +66,7 @@ function GuestLayout({ children }) {
       <Navbar />
       <main>{children}</main>
       <Footer />
+      <FloatingContact />
     </>
   );
 }

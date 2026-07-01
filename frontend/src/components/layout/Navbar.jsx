@@ -5,11 +5,10 @@ import { Menu, X, Phone, Mail } from 'lucide-react';
 const NAV_LINKS = [
   { path: '/', label: 'Home' },
   { path: '/rooms', label: 'Rooms' },
+  { path: '/amenities', label: 'Facilities' },
   { path: '/gallery', label: 'Gallery' },
-  { path: '/amenities', label: 'Amenities' },
-  { path: '/offers', label: 'Offers' },
-  { path: '/guest-panel', label: 'Guest Portal' },
-  { path: '/about', label: 'About' },
+  { path: '/#attractions', label: 'Nearby Attractions' },
+  { path: '/#reviews', label: 'Reviews' },
   { path: '/contact', label: 'Contact' },
 ];
 
@@ -43,9 +42,9 @@ export default function Navbar() {
         <div className="top-bar">
           <div className="top-bar-inner">
             <div className="top-bar-left">
-              <a href="tel:+919876543210" className="top-bar-item">
+              <a href="tel:+918281122009" className="top-bar-item">
                 <Phone size={12} />
-                +91 98765 43210
+                +91 82811 22009
               </a>
               <a href="mailto:info@bethelmeadows.com" className="top-bar-item">
                 <Mail size={12} />
@@ -145,7 +144,7 @@ export default function Navbar() {
             borderTop: '1px solid rgba(255,255,255,0.08)'
           }}>
             <a
-              href="tel:+919876543210"
+              href="tel:+918281122009"
               style={{
                 display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
                 color: 'var(--color-gold)', fontSize: 'var(--text-sm)',
@@ -153,7 +152,7 @@ export default function Navbar() {
               }}
             >
               <Phone size={14} />
-              +91 98765 43210
+              +91 82811 22009
             </a>
             <a
               href="mailto:info@bethelmeadows.com"
