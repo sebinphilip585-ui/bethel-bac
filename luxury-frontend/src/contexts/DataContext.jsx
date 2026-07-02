@@ -266,6 +266,81 @@ export function DataProvider({ children }) {
     fetchBackendData();
   }, [location.pathname]);
 
+  // ========== REAL-TIME POLLING ==========
+  // Polls the backend every 10 seconds for new bookings to trigger alarms in the admin panel.
+  useEffect(() => {
+    const isAdminPage = location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff');
+    if (!isAdminPage) return;
+
+    const token = localStorage.getItem('bm_token');
+    if (!token) return;
+
+    let isPolling = true;
+
+    const pollData = async () => {
+      try {
+        const dbBookings = await api.getBookings();
+        if (!isPolling || !dbBookings) return;
+
+        // Get current known bookings from localStorage to avoid React state staleness issues in the interval
+        const currentStored = JSON.parse(localStorage.getItem(LS_BOOKINGS) || '[]');
+        const currentIds = currentStored.map(b => b.id);
+        
+        const newlyAdded = dbBookings.filter(b => !currentIds.includes(b.id));
+
+        if (newlyAdded.length > 0) {
+          // New bookings found! Trigger a full refresh of rooms, guests, and bookings.
+          const [dbRooms, dbGuests] = await Promise.all([
+            api.getRooms().catch(() => null),
+            api.getGuests().catch(() => null)
+          ]);
+          
+          if (!isPolling) return;
+
+          const mappedBookings = dbBookings.map(b => ({
+            ...b,
+            check_in: parseLocalDate(b.check_in),
+            check_out: parseLocalDate(b.check_out),
+            created_at: b.created_at ? new Date(b.created_at) : new Date(),
+            room: dbRooms ? dbRooms.find(r => r.id === b.room_id) : b.room,
+            guest: dbGuests ? dbGuests.find(g => g.id === b.guest_id) : b.guest
+          }));
+
+          setBookings(mappedBookings);
+          
+          if (dbGuests) setGuests(dbGuests);
+
+          // Add to unacknowledged list to trigger the siren alarm
+          const newIds = newlyAdded.map(b => b.id);
+          setUnacknowledgedBookings(prev => {
+            const unique = newIds.filter(id => !prev.includes(id));
+            return [...prev, ...unique];
+          });
+
+          // Show toasts
+          newlyAdded.forEach(nb => {
+             addToast(`🔔 New Booking Received: ${nb.id}!`, 'success', 15000);
+             addNotification({
+                type: 'new_booking',
+                title: '🔔 New Booking Received!',
+                message: `Booking ${nb.id} was just created.`,
+                bookingId: nb.id,
+                priority: 'high'
+             });
+          });
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    };
+
+    const interval = setInterval(pollData, 10000);
+    return () => {
+      isPolling = false;
+      clearInterval(interval);
+    };
+  }, [location.pathname, addToast]);
+
   // ========== TOAST NOTIFICATIONS ==========
   const addToast = useCallback((message, type = 'info', duration = 5000) => {
     const id = ++toastIdRef.current;

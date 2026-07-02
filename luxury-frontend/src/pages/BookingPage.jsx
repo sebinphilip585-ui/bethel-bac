@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CalendarDays, Users, CreditCard, CheckCircle, ArrowRight, ArrowLeft, Printer, Download, MapPin, Phone, User, Mail, MessageSquare } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { api } from '../lib/api';
 
 const ROOM_IMAGES = [
   '/images/media__1782958486920.jpg',
@@ -62,8 +62,7 @@ export default function BookingPage() {
   ];
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/rooms`)
-      .then(res => res.json())
+    api.getRooms()
       .then(data => { 
         if (!data || data.length === 0) data = FALLBACK_ROOMS;
         data.sort((a, b) => a.name.localeCompare(b.name)); 
@@ -97,25 +96,19 @@ export default function BookingPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/api/bookings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomId: formData.roomId,
-          guestName: formData.guestName,
-          guestEmail: formData.guestEmail,
-          guestPhone: formData.guestPhone,
-          checkIn: formData.checkIn,
-          checkOut: formData.checkOut,
-          identityCard: formData.identityCard,
-          cardDetails: formData.cardDetails,
-          checkInTime: formData.checkInTime,
-          checkOutTime: formData.checkOutTime
-        })
+      const data = await api.createBooking({
+        roomId: formData.roomId,
+        guestName: formData.guestName,
+        guestEmail: formData.guestEmail,
+        guestPhone: formData.guestPhone,
+        checkIn: formData.checkIn,
+        checkOut: formData.checkOut,
+        identityCard: formData.identityCard,
+        cardDetails: formData.cardDetails,
+        checkInTime: formData.checkInTime,
+        checkOutTime: formData.checkOutTime
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setBooking(data.booking);
+      setBooking(data.booking || data);
       setStep(5);
     } catch (err) {
       console.error('Booking API failed, using demo fallback:', err);
