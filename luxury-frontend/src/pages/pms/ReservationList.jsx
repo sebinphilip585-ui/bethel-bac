@@ -266,14 +266,14 @@ export default function ReservationList() {
 
   return (
     <div>
-      <div className="pms-header">
+      <div className="pms-page-header">
         <div>
-          <h1 className="pms-header-title">Reservations</h1>
+          <h1 className="pms-page-title">Reservations</h1>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-gray-500)' }}>
             Manage and edit guest bookings or create direct walk-in reservations
           </p>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={handleOpenNew}>
+        <button className="pms-btn-primary" onClick={handleOpenNew}>
           <Plus size={16} /> New Booking
         </button>
       </div>
@@ -363,7 +363,7 @@ export default function ReservationList() {
             <div style={{ position: 'relative', flex: 1, minWidth: '280px', maxWidth: '360px' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-gray-400)' }} />
               <input
-                className="form-input"
+                className="pms-input"
                 style={{ paddingLeft: '36px' }}
                 placeholder="Search name, email, or booking ID..."
                 value={search}
@@ -371,7 +371,7 @@ export default function ReservationList() {
               />
             </div>
             <select
-              className="form-select"
+              className="pms-select"
               style={{ width: '180px' }}
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
@@ -384,22 +384,22 @@ export default function ReservationList() {
             </select>
             <div style={{ display: 'flex', background: 'var(--color-gray-100)', borderRadius: 'var(--radius-md)', padding: '4px' }}>
               <button 
-                className={`btn btn-sm ${timeFilter === 'all' ? 'btn-primary' : 'btn-ghost'}`} 
+                className={`pms-btn ${timeFilter === 'all' ? 'pms-btn-primary' : 'pms-btn-outline'}`} 
                 onClick={() => setTimeFilter('all')}
                 style={{ borderRadius: 'var(--radius-sm)' }}
               >All</button>
               <button 
-                className={`btn btn-sm ${timeFilter === 'today' ? 'btn-primary' : 'btn-ghost'}`} 
+                className={`pms-btn ${timeFilter === 'today' ? 'pms-btn-primary' : 'pms-btn-outline'}`} 
                 onClick={() => setTimeFilter('today')}
                 style={{ borderRadius: 'var(--radius-sm)' }}
               >Today</button>
               <button 
-                className={`btn btn-sm ${timeFilter === 'upcoming' ? 'btn-primary' : 'btn-ghost'}`} 
+                className={`pms-btn ${timeFilter === 'upcoming' ? 'pms-btn-primary' : 'pms-btn-outline'}`} 
                 onClick={() => setTimeFilter('upcoming')}
                 style={{ borderRadius: 'var(--radius-sm)' }}
               >Upcoming</button>
               <button 
-                className={`btn btn-sm ${timeFilter === 'past' ? 'btn-primary' : 'btn-ghost'}`} 
+                className={`pms-btn ${timeFilter === 'past' ? 'pms-btn-primary' : 'pms-btn-outline'}`} 
                 onClick={() => setTimeFilter('past')}
                 style={{ borderRadius: 'var(--radius-sm)' }}
               >Past</button>
@@ -410,8 +410,8 @@ export default function ReservationList() {
           </div>
 
           {/* Table */}
-          <div className="table-container animate-fade-in">
-            <table className="table">
+          <div className="pms-table-container animate-fade-in">
+            <table className="pms-table">
               <thead>
                 <tr>
                   <th>Booking ID / Time</th>
@@ -464,13 +464,13 @@ export default function ReservationList() {
                       }
                     });
 
-                    const renderGroup = (title, items, bgColor = 'var(--color-gray-50)', badgeColor = 'badge-navy') => {
+                    const renderGroup = (title, items, bgColor = 'var(--color-gray-50)', badgeColor = 'pms-badge-navy') => {
                       if (items.length === 0) return null;
                       return (
                         <>
                           <tr>
                             <td colSpan="8" style={{ background: bgColor, fontWeight: 600, color: 'var(--color-navy)', padding: '12px 16px' }}>
-                              {title} <span className={`badge ${badgeColor}`} style={{ marginLeft: '8px' }}>{items.length}</span>
+                              {title} <span className={`pms-badge ${badgeColor}`} style={{ marginLeft: '8px' }}>{items.length}</span>
                             </td>
                           </tr>
                           {items.map(b => {
@@ -518,10 +518,10 @@ export default function ReservationList() {
                       </td>
                       <td style={{ textAlign: 'center', fontWeight: 500 }}>{b.nights || 1}</td>
                       <td>
-                        <span className={`badge ${
-                          b.status === 'confirmed' ? 'badge-info' :
-                          b.status === 'checked_in' ? 'badge-success' :
-                          b.status === 'checked_out' ? 'badge-navy' : 'badge-error'
+                        <span className={`pms-badge ${
+                          b.status === 'confirmed' ? 'pms-badge-info' :
+                          b.status === 'checked_in' ? 'pms-badge-success' :
+                          b.status === 'checked_out' ? 'pms-badge-navy' : 'pms-badge-error'
                         }`}>
                           {b.status.replace('_', ' ')}
                         </span>
@@ -531,21 +531,21 @@ export default function ReservationList() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 'var(--space-1)', alignItems: 'center' }}>
-                          <button className="btn btn-icon btn-ghost" title="Print Invoice" onClick={() => setInvoiceBookingId(b.id)}>
+                          <button className="enterprise-icon-btn" title="Print Invoice" onClick={() => setInvoiceBookingId(b.id)}>
                             <FileText size={16} />
                           </button>
-                          <button className="btn btn-icon btn-ghost" title="Edit booking details" onClick={() => handleOpenEdit(b)}>
+                          <button className="enterprise-icon-btn" title="Edit booking details" onClick={() => handleOpenEdit(b)}>
                             <Edit size={16} />
                           </button>
                           {(b.status === 'confirmed' || b.status === 'pending') && (
-                            <button className="btn btn-icon btn-ghost" title="Cancel booking" style={{ color: 'var(--color-error)' }} onClick={() => cancelBooking(b.id)}>
+                            <button className="enterprise-icon-btn" title="Cancel booking" style={{ color: 'var(--color-error)' }} onClick={() => cancelBooking(b.id)}>
                               <XIcon size={16} />
                             </button>
                           )}
                           {(b.status === 'confirmed' || b.status === 'pending') && (
                             isFuture ? (
                               <button 
-                                className="btn btn-secondary btn-sm" 
+                                className="pms-btn-outline" 
                                 disabled
                                 style={{ padding: '2px 8px', fontSize: '11px', opacity: 0.6 }}
                                 title={`Check-in Available on ${format(new Date(b.check_in), 'MMM d')}`}
@@ -555,7 +555,7 @@ export default function ReservationList() {
                             ) : (
                               b.payment_status === 'paid' ? (
                                 <button 
-                                  className="btn btn-secondary btn-sm" 
+                                  className="pms-btn-outline" 
                                   style={{ padding: '2px 8px', fontSize: '11px' }}
                                   title="Check In Guest"
                                   onClick={() => checkIn(b.id)}
@@ -564,7 +564,7 @@ export default function ReservationList() {
                                 </button>
                               ) : (
                                 <button 
-                                  className="btn btn-secondary btn-sm" 
+                                  className="pms-btn-outline" 
                                   style={{ padding: '2px 8px', fontSize: '11px', background: 'var(--color-success)', color: 'white', border: 'none' }}
                                   title="Collect payment and automatically check in"
                                   onClick={() => {
@@ -579,7 +579,7 @@ export default function ReservationList() {
                             )
                           )}
                           {b.status === 'checked_in' && (
-                            <button className="btn btn-primary btn-sm" style={{ padding: '2px 8px', fontSize: '11px' }} onClick={() => {
+                            <button className="pms-btn-primary" style={{ padding: '2px 8px', fontSize: '11px' }} onClick={() => {
                               const checkOutDateStr = format(parseLocalDate(b.check_out), 'yyyy-MM-dd');
                               const todayStr = format(new Date(), 'yyyy-MM-dd');
                               if (checkOutDateStr > todayStr) {
@@ -596,7 +596,7 @@ export default function ReservationList() {
                           )}
                           {b.payment_status !== 'paid' && b.status !== 'cancelled' && (
                             <button 
-                              className="btn btn-sm" 
+                              className="pms-btn" 
                               style={{ padding: '2px 8px', fontSize: '11px', background: 'var(--color-gold)', color: 'var(--color-navy)', border: 'none', fontWeight: 600 }} 
                               onClick={() => {
                                 setCollectPaymentBookingId(b.id);
@@ -619,12 +619,12 @@ export default function ReservationList() {
 
                     return (
                       <>
-                        {renderGroup("Priority Check-Outs (Today)", todaysCheckOuts, 'rgba(239, 68, 68, 0.1)', 'badge-error')}
-                        {renderGroup("Today's Check-ins", todaysCheckIns, 'rgba(16, 185, 129, 0.1)', 'badge-success')}
-                        {renderGroup("Tomorrow's Arrivals", tomorrowsArrivals, 'rgba(59, 130, 246, 0.1)', 'badge-info')}
-                        {renderGroup("Upcoming Stays", upcomingStays, 'rgba(245, 158, 11, 0.1)', 'badge-warning')}
-                        {renderGroup("Active / In-House", activeStays, 'var(--color-gray-100)', 'badge-navy')}
-                        {renderGroup("Other Bookings", otherBookings, 'var(--color-gray-50)', 'badge-gray')}
+                        {renderGroup("Priority Check-Outs (Today)", todaysCheckOuts, 'rgba(239, 68, 68, 0.1)', 'pms-badge-error')}
+                        {renderGroup("Today's Check-ins", todaysCheckIns, 'rgba(16, 185, 129, 0.1)', 'pms-badge-success')}
+                        {renderGroup("Tomorrow's Arrivals", tomorrowsArrivals, 'rgba(59, 130, 246, 0.1)', 'pms-badge-info')}
+                        {renderGroup("Upcoming Stays", upcomingStays, 'rgba(245, 158, 11, 0.1)', 'pms-badge-warning')}
+                        {renderGroup("Active / In-House", activeStays, 'var(--color-gray-100)', 'pms-badge-navy')}
+                        {renderGroup("Other Bookings", otherBookings, 'var(--color-gray-50)', 'pms-badge-gray')}
                       </>
                     );
                   })()
@@ -640,23 +640,23 @@ export default function ReservationList() {
         <div className="animate-fade-in">
           {/* Summary Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-            <div className="stat-card" style={{ borderLeft: '3px solid var(--color-gold)' }}>
-              <div className="stat-card-value">₹{totalInvoiced.toLocaleString()}</div>
-              <div className="stat-card-label">Total Invoiced Amount</div>
+            <div className="pms-stat-card" style={{ borderLeft: '3px solid var(--color-gold)' }}>
+              <div className="pms-stat-value">₹{totalInvoiced.toLocaleString()}</div>
+              <div className="pms-stat-label">Total Invoiced Amount</div>
             </div>
-            <div className="stat-card" style={{ borderLeft: '3px solid var(--color-success)' }}>
-              <div className="stat-card-value" style={{ color: 'var(--color-success)' }}>₹{totalCollected.toLocaleString()}</div>
-              <div className="stat-card-label">Total Collected (Paid)</div>
+            <div className="pms-stat-card" style={{ borderLeft: '3px solid var(--color-success)' }}>
+              <div className="pms-stat-value" style={{ color: 'var(--color-success)' }}>₹{totalCollected.toLocaleString()}</div>
+              <div className="pms-stat-label">Total Collected (Paid)</div>
             </div>
-            <div className="stat-card" style={{ borderLeft: '3px solid var(--color-warning)' }}>
-              <div className="stat-card-value" style={{ color: 'var(--color-warning)' }}>₹{totalPending.toLocaleString()}</div>
-              <div className="stat-card-label">Total Pending (Outstanding)</div>
+            <div className="pms-stat-card" style={{ borderLeft: '3px solid var(--color-warning)' }}>
+              <div className="pms-stat-value" style={{ color: 'var(--color-warning)' }}>₹{totalPending.toLocaleString()}</div>
+              <div className="pms-stat-label">Total Pending (Outstanding)</div>
             </div>
           </div>
 
           {/* Payment Status Grid */}
-          <div className="table-container">
-            <table className="table">
+          <div className="pms-table-container">
+            <table className="pms-table">
               <thead>
                 <tr>
                   <th>Booking ID</th>
@@ -684,9 +684,9 @@ export default function ReservationList() {
                         ₹{(b.amount_paid || 0).toLocaleString()}
                       </td>
                       <td>
-                        <span className={`badge ${
-                          isPaid ? 'badge-success' : 
-                          (b.amount_paid > 0 ? 'badge-warning' : 'badge-error')
+                        <span className={`pms-badge ${
+                          isPaid ? 'pms-badge-success' : 
+                          (b.amount_paid > 0 ? 'pms-badge-warning' : 'pms-badge-error')
                         }`}>
                           {isPaid ? 'PAID' : (b.amount_paid > 0 ? 'PARTIAL' : 'PENDING')}
                         </span>
@@ -708,7 +708,7 @@ export default function ReservationList() {
                               setCollectPaymentBookingId(b.id);
                               setCollectSource('');
                             }}
-                            className="btn btn-secondary btn-sm"
+                            className="pms-btn-outline"
                             style={{ minHeight: '30px', padding: '2px 12px', fontSize: '11px' }}
                           >
                             Collect ₹{outstanding.toLocaleString()}
@@ -733,23 +733,23 @@ export default function ReservationList() {
         <div className="animate-fade-in">
           {/* Source Breakdown Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-            <div className="stat-card" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-              <div className="stat-card-value" style={{ color: '#16a34a' }}>₹{upiTotal.toLocaleString()}</div>
-              <div className="stat-card-label" style={{ color: '#15803d', fontWeight: 600 }}>Total Collected via UPI</div>
+            <div className="pms-stat-card" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+              <div className="pms-stat-value" style={{ color: '#16a34a' }}>₹{upiTotal.toLocaleString()}</div>
+              <div className="pms-stat-label" style={{ color: '#15803d', fontWeight: 600 }}>Total Collected via UPI</div>
             </div>
-            <div className="stat-card" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-              <div className="stat-card-value" style={{ color: '#2563eb' }}>₹{cardTotal.toLocaleString()}</div>
-              <div className="stat-card-label" style={{ color: '#1d4ed8', fontWeight: 600 }}>Total Collected via Card</div>
+            <div className="pms-stat-card" style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+              <div className="pms-stat-value" style={{ color: '#2563eb' }}>₹{cardTotal.toLocaleString()}</div>
+              <div className="pms-stat-label" style={{ color: '#1d4ed8', fontWeight: 600 }}>Total Collected via Card</div>
             </div>
-            <div className="stat-card" style={{ background: '#fafaf9', border: '1px solid #e7e5e4' }}>
-              <div className="stat-card-value" style={{ color: 'var(--color-navy)' }}>₹{cashTotal.toLocaleString()}</div>
-              <div className="stat-card-label" style={{ color: 'var(--color-gray-600)', fontWeight: 600 }}>Total via Desk / Cash</div>
+            <div className="pms-stat-card" style={{ background: '#fafaf9', border: '1px solid #e7e5e4' }}>
+              <div className="pms-stat-value" style={{ color: 'var(--color-navy)' }}>₹{cashTotal.toLocaleString()}</div>
+              <div className="pms-stat-label" style={{ color: 'var(--color-gray-600)', fontWeight: 600 }}>Total via Desk / Cash</div>
             </div>
           </div>
 
           {/* Sources Logs Table */}
-          <div className="table-container">
-            <table className="table">
+          <div className="pms-table-container">
+            <table className="pms-table">
               <thead>
                 <tr>
                   <th>Booking Ref / Time</th>
@@ -779,7 +779,7 @@ export default function ReservationList() {
                     <td>₹{b.total_amount?.toLocaleString()}</td>
                     <td style={{ fontWeight: 600, color: 'var(--color-success)' }}>₹{b.amount_paid?.toLocaleString()}</td>
                     <td>
-                      <span className="badge badge-gold" style={{ padding: '2px 8px', fontSize: '10px' }}>
+                      <span className="pms-badge pms-pms-badge-primary" style={{ padding: '2px 8px', fontSize: '10px' }}>
                         {b.payment_method || 'Desk Cash'}
                       </span>
                     </td>
@@ -822,34 +822,34 @@ export default function ReservationList() {
                 Download the complete guest ledger database including automated check-in/out timestamps and financial records.
               </p>
             </div>
-            <button className="btn btn-primary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button className="pms-btn-primary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FileText size={18} /> Export Audit Ledger (CSV)
             </button>
           </div>
 
           {/* Audit Summary Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-4)' }}>
-            <div className="stat-card">
-              <div className="stat-card-value">{bookings.length}</div>
-              <div className="stat-card-label">Total Reservations</div>
+            <div className="pms-stat-card">
+              <div className="pms-stat-value">{bookings.length}</div>
+              <div className="pms-stat-label">Total Reservations</div>
             </div>
-            <div className="stat-card" style={{ borderLeft: '3px solid var(--color-success)' }}>
-              <div className="stat-card-value" style={{ color: 'var(--color-success)' }}>
+            <div className="pms-stat-card" style={{ borderLeft: '3px solid var(--color-success)' }}>
+              <div className="pms-stat-value" style={{ color: 'var(--color-success)' }}>
                 {bookings.filter(b => b.status === 'checked_in').length}
               </div>
-              <div className="stat-card-label">Currently Checked In</div>
+              <div className="pms-stat-label">Currently Checked In</div>
             </div>
-            <div className="stat-card" style={{ borderLeft: '3px solid var(--color-navy)' }}>
-              <div className="stat-card-value" style={{ color: 'var(--color-navy)' }}>
+            <div className="pms-stat-card" style={{ borderLeft: '3px solid var(--color-navy)' }}>
+              <div className="pms-stat-value" style={{ color: 'var(--color-navy)' }}>
                 {bookings.filter(b => b.status === 'checked_out').length}
               </div>
-              <div className="stat-card-label">Completed Stays</div>
+              <div className="pms-stat-label">Completed Stays</div>
             </div>
-            <div className="stat-card" style={{ borderLeft: '3px solid var(--color-warning)' }}>
-              <div className="stat-card-value" style={{ color: 'var(--color-warning)' }}>
+            <div className="pms-stat-card" style={{ borderLeft: '3px solid var(--color-warning)' }}>
+              <div className="pms-stat-value" style={{ color: 'var(--color-warning)' }}>
                 {bookings.filter(b => b.status === 'cancelled').length}
               </div>
-              <div className="stat-card-label">Cancelled Bookings</div>
+              <div className="pms-stat-label">Cancelled Bookings</div>
             </div>
           </div>
 
@@ -860,8 +860,8 @@ export default function ReservationList() {
                 ⏰ Automated Operations Timeline (Audit Log)
               </h3>
             </div>
-            <div className="table-container" style={{ border: 'none', borderRadius: 0 }}>
-              <table className="table">
+            <div className="pms-table-container" style={{ border: 'none', borderRadius: 0 }}>
+              <table className="pms-table">
                 <thead>
                   <tr>
                     <th>Booking Ref</th>
@@ -889,7 +889,7 @@ export default function ReservationList() {
                         {b.actual_check_out ? format(new Date(b.actual_check_out), 'dd MMM yyyy HH:mm:ss') : 'Not Checked Out'}
                       </td>
                       <td>
-                        <span className={`badge ${b.payment_status === 'paid' ? 'badge-success' : 'badge-error'}`}>
+                        <span className={`pms-badge ${b.payment_status === 'paid' ? 'pms-badge-success' : 'pms-badge-error'}`}>
                           {b.payment_status?.toUpperCase()}
                         </span>
                       </td>
@@ -937,7 +937,7 @@ export default function ReservationList() {
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
                   <label className="form-label" style={{ fontWeight: 600 }}>Guest Full Name *</label>
                   <input
-                    className="form-input"
+                    className="pms-input"
                     value={formData.guestName}
                     onChange={e => setFormData(prev => ({ ...prev, guestName: e.target.value }))}
                     placeholder="Enter guest's full name"
@@ -949,7 +949,7 @@ export default function ReservationList() {
                   <label className="form-label" style={{ fontWeight: 600 }}>Guest Email *</label>
                   <input
                     type="email"
-                    className="form-input"
+                    className="pms-input"
                     value={formData.guestEmail}
                     onChange={e => setFormData(prev => ({ ...prev, guestEmail: e.target.value }))}
                     placeholder="guest@email.com"
@@ -960,7 +960,7 @@ export default function ReservationList() {
                 <div className="form-group">
                   <label className="form-label" style={{ fontWeight: 600 }}>Guest Phone *</label>
                   <input
-                    className="form-input"
+                    className="pms-input"
                     value={formData.guestPhone}
                     onChange={e => setFormData(prev => ({ ...prev, guestPhone: e.target.value }))}
                     placeholder="+91 XXXXX XXXXX"
@@ -971,7 +971,7 @@ export default function ReservationList() {
                 <div className="form-group">
                   <label className="form-label">ID Type</label>
                   <select
-                    className="form-select"
+                    className="pms-select"
                     value={formData.guestIdType}
                     onChange={e => setFormData(prev => ({ ...prev, guestIdType: e.target.value }))}
                   >
@@ -985,7 +985,7 @@ export default function ReservationList() {
                 <div className="form-group">
                   <label className="form-label">ID Document Number</label>
                   <input
-                    className="form-input"
+                    className="pms-input"
                     value={formData.guestIdNumber}
                     onChange={e => setFormData(prev => ({ ...prev, guestIdNumber: e.target.value }))}
                     placeholder="XXXX-XXXX-XXXX"
@@ -998,7 +998,7 @@ export default function ReservationList() {
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <input
                         type="date"
-                        className="form-input"
+                        className="pms-input"
                         value={formData.checkIn}
                         onChange={e => setFormData(prev => ({ ...prev, checkIn: e.target.value }))}
                         style={{ flex: 2 }}
@@ -1006,7 +1006,7 @@ export default function ReservationList() {
                       />
                       <input
                         type="time"
-                        className="form-input"
+                        className="pms-input"
                         value={formData.checkInTime}
                         onChange={e => setFormData(prev => ({ ...prev, checkInTime: e.target.value }))}
                         style={{ flex: 1 }}
@@ -1020,7 +1020,7 @@ export default function ReservationList() {
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <input
                         type="date"
-                        className="form-input"
+                        className="pms-input"
                         value={formData.checkOut}
                         onChange={e => setFormData(prev => ({ ...prev, checkOut: e.target.value }))}
                         style={{ flex: 2 }}
@@ -1028,7 +1028,7 @@ export default function ReservationList() {
                       />
                       <input
                         type="time"
-                        className="form-input"
+                        className="pms-input"
                         value={formData.checkOutTime}
                         onChange={e => setFormData(prev => ({ ...prev, checkOutTime: e.target.value }))}
                         style={{ flex: 1 }}
@@ -1041,7 +1041,7 @@ export default function ReservationList() {
                 <div className="form-group">
                   <label className="form-label" style={{ fontWeight: 600 }}>Room Type *</label>
                   <select
-                    className="form-select"
+                    className="pms-select"
                     value={formData.roomTypeId}
                     onChange={e => {
                       const firstAvailable = rooms.find(r => r.room_type_id === e.target.value && r.status === 'available');
@@ -1059,7 +1059,7 @@ export default function ReservationList() {
                 <div className="form-group">
                   <label className="form-label" style={{ fontWeight: 600 }}>Assign Room *</label>
                   <select
-                    className="form-select"
+                    className="pms-select"
                     value={formData.roomId}
                     onChange={e => setFormData(prev => ({ ...prev, roomId: e.target.value }))}
                     required
@@ -1076,7 +1076,7 @@ export default function ReservationList() {
                 <div className="form-group">
                   <label className="form-label">Guests Count</label>
                   <select
-                    className="form-select"
+                    className="pms-select"
                     value={formData.guests}
                     onChange={e => setFormData(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
                   >
@@ -1091,7 +1091,7 @@ export default function ReservationList() {
                   <div className="form-group">
                     <label className="form-label" style={{ fontWeight: 600 }}>Booking Status *</label>
                     <select
-                      className="form-select"
+                      className="pms-select"
                       value={formData.status}
                       onChange={e => setFormData(prev => ({ ...prev, status: e.target.value }))}
                     >
@@ -1113,7 +1113,7 @@ export default function ReservationList() {
                   <label className="form-label">Custom Charge Amount (₹) - Leave blank to auto-calculate</label>
                   <input
                     type="number"
-                    className="form-input"
+                    className="pms-input"
                     value={formData.totalAmount}
                     onChange={e => setFormData(prev => ({ ...prev, totalAmount: e.target.value }))}
                     placeholder={`Auto-calculate: ₹${getCalculatedPrice().toLocaleString()}`}
@@ -1129,7 +1129,7 @@ export default function ReservationList() {
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
                   <label className="form-label">Special Requests</label>
                   <textarea
-                    className="form-input"
+                    className="pms-input"
                     value={formData.specialRequests}
                     onChange={e => setFormData(prev => ({ ...prev, specialRequests: e.target.value }))}
                     placeholder="Extra bedding, allergies, request details..."
@@ -1140,7 +1140,7 @@ export default function ReservationList() {
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
                   <label className="form-label">Internal Staff Notes</label>
                   <textarea
-                    className="form-input"
+                    className="pms-input"
                     value={formData.notes}
                     onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                     placeholder="Staff notes for operations..."
@@ -1154,10 +1154,10 @@ export default function ReservationList() {
                 display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px',
                 paddingTop: '16px', borderTop: '1px solid var(--color-gray-200)'
               }}>
-                <button type="button" className="btn btn-outline" onClick={() => setIsFormOpen(false)}>
+                <button type="button" className="pms-btn-outline" onClick={() => setIsFormOpen(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="pms-btn-primary">
                   {editBookingId ? 'Save Changes' : 'Confirm Walk-In'}
                 </button>
               </div>
@@ -1209,7 +1209,7 @@ export default function ReservationList() {
               <div className="form-group" style={{ marginBottom: '16px' }}>
                 <label className="form-label">Payment Method</label>
                 <select
-                  className="form-select"
+                  className="pms-select"
                   value={collectMethod}
                   onChange={(e) => setCollectMethod(e.target.value)}
                 >
@@ -1223,7 +1223,7 @@ export default function ReservationList() {
                 <label className="form-label">Payment Source / Reference Info</label>
                 <input
                   type="text"
-                  className="form-input"
+                  className="pms-input"
                   placeholder={
                     collectMethod === 'UPI' ? 'Enter UPI ID or Transaction ID' :
                     collectMethod === 'Card' ? 'Enter Card Type or Last 4 Digits' :
@@ -1236,10 +1236,10 @@ export default function ReservationList() {
               </div>
 
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
-                <button type="button" className="btn btn-outline btn-sm" style={{ minHeight: '32px' }} onClick={() => setCollectPaymentBookingId(null)}>
+                <button type="button" className="pms-btn-outline" style={{ minHeight: '32px' }} onClick={() => setCollectPaymentBookingId(null)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary btn-sm" style={{ minHeight: '32px' }}>
+                <button type="submit" className="pms-btn-primary" style={{ minHeight: '32px' }}>
                   Record Payment
                 </button>
               </div>
@@ -1288,7 +1288,7 @@ export default function ReservationList() {
                 <label className="form-label">Admin Password</label>
                 <input
                   type="password"
-                  className="form-input"
+                  className="pms-input"
                   placeholder="Enter admin password (admin123)"
                   value={adminPassword}
                   onChange={(e) => {
@@ -1303,10 +1303,10 @@ export default function ReservationList() {
               </div>
 
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
-                <button type="button" className="btn btn-outline btn-sm" style={{ minHeight: '32px' }} onClick={() => setEarlyCheckoutBookingId(null)}>
+                <button type="button" className="pms-btn-outline" style={{ minHeight: '32px' }} onClick={() => setEarlyCheckoutBookingId(null)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary btn-sm" style={{ minHeight: '32px' }}>
+                <button type="submit" className="pms-btn-primary" style={{ minHeight: '32px' }}>
                   Authorize & Check Out
                 </button>
               </div>

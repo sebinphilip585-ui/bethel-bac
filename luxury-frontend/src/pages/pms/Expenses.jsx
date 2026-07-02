@@ -59,14 +59,14 @@ export default function Expenses() {
 
   return (
     <div className="animate-fade-in-up" style={{ paddingBottom: '40px' }}>
-      <div className="pms-header" style={{ marginBottom: '32px' }}>
+      <div className="pms-page-header" style={{ marginBottom: '32px' }}>
         <div>
-          <h1 className="pms-header-title theme-text-primary">Property Expenses</h1>
+          <h1 className="pms-page-title theme-text-primary">Property Expenses</h1>
           <p className="theme-text-secondary" style={{ fontSize: '14px', marginTop: '4px' }}>
             Track vendors, receipts, and operational costs.
           </p>
         </div>
-        <button onClick={() => setIsFormOpen(!isFormOpen)} className="saas-btn">
+        <button onClick={() => setIsFormOpen(!isFormOpen)} className="pms-btn-primary">
           <Plus size={16} /> Log Expense
         </button>
       </div>
@@ -77,13 +77,13 @@ export default function Expenses() {
         {isFormOpen && (
           <motion.div 
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-            className="saas-card" style={{ padding: '24px' }}
+            className="pms-card" style={{ padding: '24px' }}
           >
             <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '20px' }}>New Expense Record</h3>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-secondary)' }}>Category</label>
-                <select className="saas-input" value={category} onChange={e => setCategory(e.target.value)}>
+                <select className="pms-input" value={category} onChange={e => setCategory(e.target.value)}>
                   <option value="housekeeping">Housekeeping Supplies</option>
                   <option value="maintenance">Maintenance & Repairs</option>
                   <option value="utilities">Utilities</option>
@@ -95,22 +95,22 @@ export default function Expenses() {
 
               <div>
                 <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-secondary)' }}>Amount (₹)</label>
-                <input type="number" className="saas-input" placeholder="e.g. 1500" value={amount} onChange={e => setAmount(e.target.value)} required />
+                <input type="number" className="pms-input" placeholder="e.g. 1500" value={amount} onChange={e => setAmount(e.target.value)} required />
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-secondary)' }}>Vendor / Supplier Name</label>
-                <input type="text" className="saas-input" placeholder="e.g. Metro Wholesale" value={vendorName} onChange={e => setVendorName(e.target.value)} />
+                <input type="text" className="pms-input" placeholder="e.g. Metro Wholesale" value={vendorName} onChange={e => setVendorName(e.target.value)} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-secondary)' }}>Date</label>
-                  <input type="date" className="saas-input" value={date} onChange={e => setDate(e.target.value)} required />
+                  <input type="date" className="pms-input" value={date} onChange={e => setDate(e.target.value)} required />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-secondary)' }}>Status</label>
-                  <select className="saas-input" value={paymentStatus} onChange={e => setPaymentStatus(e.target.value)}>
+                  <select className="pms-input" value={paymentStatus} onChange={e => setPaymentStatus(e.target.value)}>
                     <option value="paid">Paid</option>
                     <option value="pending">Pending</option>
                     <option value="overdue">Overdue</option>
@@ -120,16 +120,16 @@ export default function Expenses() {
 
               <div>
                 <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-secondary)' }}>Receipt URL (Optional)</label>
-                <input type="url" className="saas-input" placeholder="https://..." value={attachmentUrl} onChange={e => setAttachmentUrl(e.target.value)} />
+                <input type="url" className="pms-input" placeholder="https://..." value={attachmentUrl} onChange={e => setAttachmentUrl(e.target.value)} />
               </div>
 
               <div>
                 <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-secondary)' }}>Description</label>
-                <textarea className="saas-input" rows="2" placeholder="Details..." value={description} onChange={e => setDescription(e.target.value)} />
+                <textarea className="pms-input" rows="2" placeholder="Details..." value={description} onChange={e => setDescription(e.target.value)} />
               </div>
 
-                <button type="button" className="saas-btn saas-btn-outline" onClick={() => setIsFormOpen(false)}>Cancel</button>
-                <button type="submit" className="saas-btn" disabled={isSubmitting}>
+                <button type="button" className="pms-btn-outline" onClick={() => setIsFormOpen(false)}>Cancel</button>
+                <button type="submit" className="pms-btn-primary" disabled={isSubmitting}>
                   {isSubmitting ? 'Saving...' : 'Save Expense'}
                 </button>
             </form>
@@ -140,13 +140,13 @@ export default function Expenses() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* KPI Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-            <div className="saas-card" style={{ padding: '20px' }}>
+            <div className="pms-card" style={{ padding: '20px' }}>
               <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>Total Expenses</div>
               <div style={{ fontSize: '28px', fontWeight: 700, color: '#ef4444', marginTop: '8px' }}>₹{totalExpenses.toLocaleString()}</div>
             </div>
             
             {/* Chart Card */}
-            <div className="saas-card" style={{ gridColumn: 'span 2', padding: '20px', display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <div className="pms-card" style={{ gridColumn: 'span 2', padding: '20px', display: 'flex', alignItems: 'center', gap: '24px' }}>
               <div style={{ width: '120px', height: '120px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -172,7 +172,7 @@ export default function Expenses() {
           </div>
 
           {/* Ledger Table */}
-          <div className="saas-card" style={{ overflow: 'hidden' }}>
+          <div className="pms-card" style={{ overflow: 'hidden' }}>
             <div style={{ padding: '20px', borderBottom: '1px solid var(--border-primary)' }}>
               <h3 style={{ fontSize: '16px', fontWeight: 600 }}>Ledger</h3>
             </div>

@@ -174,17 +174,17 @@ export default function RoomStatusBoard() {
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {selectedRoom.currentStatus !== 'available' && (
-                  <button className="pms-btn pms-btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => handleUpdateStatus('available')}>
+                  <button className="pms-btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => handleUpdateStatus('available')}>
                     <Sparkles size={14} /> Mark Clean & Available
                   </button>
                 )}
                 {selectedRoom.currentStatus !== 'cleaning' && selectedRoom.currentStatus !== 'occupied' && (
-                  <button className="pms-btn pms-btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => handleUpdateStatus('cleaning')}>
+                  <button className="pms-btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => handleUpdateStatus('cleaning')}>
                     <Sparkles size={14} /> Send to Cleaning (Dirty)
                   </button>
                 )}
                 {selectedRoom.currentStatus !== 'maintenance' && (
-                  <button className="pms-btn pms-btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--pms-danger)' }} onClick={() => handleUpdateStatus('maintenance')}>
+                  <button className="pms-btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--pms-danger)' }} onClick={() => handleUpdateStatus('maintenance')}>
                     <Wrench size={14} /> Place in Maintenance
                   </button>
                 )}
@@ -208,7 +208,7 @@ export default function RoomStatusBoard() {
                   </div>
                   
                   <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                    <button className="pms-btn pms-btn-primary" style={{ flex: 1, padding: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => setInvoiceBookingId(selectedRoom.guest.id)}>
+                    <button className="pms-btn-primary" style={{ flex: 1, padding: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => setInvoiceBookingId(selectedRoom.guest.id)}>
                       <Eye size={14} /> View Invoice
                     </button>
                   </div>

@@ -129,17 +129,17 @@ export default function CalendarView() {
 
   return (
     <div className="animate-fade-in-up" style={{ height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
-      <div className="pms-header" style={{ marginBottom: 'var(--space-4)', flexShrink: 0 }}>
+      <div className="pms-page-header" style={{ marginBottom: 'var(--space-4)', flexShrink: 0 }}>
         <div>
-          <h1 className="pms-header-title theme-text-primary">Master Calendar</h1>
+          <h1 className="pms-page-title theme-text-primary">Master Calendar</h1>
           <p className="theme-text-secondary" style={{ fontSize: '14px' }}>Drag and drop events, site visits, and team meetings.</p>
         </div>
-        <button className="saas-btn" onClick={() => handleSelectSlot({ start: new Date(), end: new Date(Date.now() + 3600000) })}>
+        <button className="pms-btn-primary" onClick={() => handleSelectSlot({ start: new Date(), end: new Date(Date.now() + 3600000) })}>
           <Plus size={16} /> New Event
         </button>
       </div>
 
-      <div className="saas-card" style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="pms-card" style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <style>
           {`
             .rbc-calendar { font-family: var(--font-body); }
@@ -185,7 +185,7 @@ export default function CalendarView() {
           >
             <motion.div 
               initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-              className="saas-card" style={{ width: '100%', maxWidth: '400px', padding: '24px' }}
+              className="pms-card" style={{ width: '100%', maxWidth: '400px', padding: '24px' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <h3 style={{ fontSize: '18px', fontWeight: 600 }}>{selectedEvent ? 'Edit Event' : 'New Event'}</h3>
@@ -195,24 +195,24 @@ export default function CalendarView() {
               <div style={{ display: 'grid', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Event Title</label>
-                  <input className="saas-input" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="e.g. Site Visit with Mr. John" />
+                  <input className="pms-input" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="e.g. Site Visit with Mr. John" />
                 </div>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Start Time</label>
-                    <input type="datetime-local" className="saas-input" value={formData.start_time} onChange={e => setFormData({...formData, start_time: e.target.value})} />
+                    <input type="datetime-local" className="pms-input" value={formData.start_time} onChange={e => setFormData({...formData, start_time: e.target.value})} />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>End Time</label>
-                    <input type="datetime-local" className="saas-input" value={formData.end_time} onChange={e => setFormData({...formData, end_time: e.target.value})} />
+                    <input type="datetime-local" className="pms-input" value={formData.end_time} onChange={e => setFormData({...formData, end_time: e.target.value})} />
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Type</label>
-                    <select className="saas-input" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+                    <select className="pms-input" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
                       <option value="meeting">Meeting</option>
                       <option value="visit">Site Visit</option>
                       <option value="maintenance">Maintenance</option>
@@ -221,21 +221,21 @@ export default function CalendarView() {
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Color Label</label>
-                    <input type="color" className="saas-input" style={{ padding: '4px', height: '40px' }} value={formData.color} onChange={e => setFormData({...formData, color: e.target.value})} />
+                    <input type="color" className="pms-input" style={{ padding: '4px', height: '40px' }} value={formData.color} onChange={e => setFormData({...formData, color: e.target.value})} />
                   </div>
                 </div>
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Description</label>
-                  <textarea className="saas-input" rows="3" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}></textarea>
+                  <textarea className="pms-input" rows="3" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}></textarea>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
                 {selectedEvent && (
-                  <button className="saas-btn-outline" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={handleDelete}>Delete</button>
+                  <button className="pms-btn-outline" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={handleDelete}>Delete</button>
                 )}
-                <button className="saas-btn" onClick={handleSave}>Save Event</button>
+                <button className="pms-btn-primary" onClick={handleSave}>Save Event</button>
               </div>
             </motion.div>
           </motion.div>

@@ -58,7 +58,7 @@ export default function PMSDashboard() {
     >
       <Link 
         to={to}
-        className="pms-stat-card"
+        className="pms-pms-stat-card"
         style={{ display: 'flex', alignItems: 'center', gap: '16px', textDecoration: 'none', height: '100%' }}
       >
         <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `rgba(${color}, 0.1)`, color: `rgb(${color})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -93,10 +93,10 @@ export default function PMSDashboard() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={exportAuditReport} className="pms-btn pms-btn-outline" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button onClick={exportAuditReport} className="pms-btn-outline" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <FileText size={16} /> Audit Report
           </button>
-          <Link to="/admin/reservations" className="pms-btn pms-btn-primary" style={{ textDecoration: 'none' }}>
+          <Link to="/admin/reservations" className="pms-btn-primary" style={{ textDecoration: 'none' }}>
             <CalendarCheck size={16} /> New Booking
           </Link>
         </div>

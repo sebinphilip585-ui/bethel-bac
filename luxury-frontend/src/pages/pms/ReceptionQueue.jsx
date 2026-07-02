@@ -62,7 +62,7 @@ export default function ReceptionQueue() {
       <motion.div 
         layout
         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-        className="saas-card glass-panel" style={{ padding: '16px', marginBottom: '12px', borderLeft: `4px solid ${priorityColors[item.priority] || '#3b82f6'}` }}
+        className="pms-card" style={{ padding: '16px', marginBottom: '12px', borderLeft: `4px solid ${priorityColors[item.priority] || '#3b82f6'}` }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
@@ -83,16 +83,16 @@ export default function ReceptionQueue() {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {item.status === 'waiting' && (
-              <button className="saas-btn" style={{ background: 'var(--brand-secondary)' }} onClick={() => handleCall(item.id)}>
+              <button className="pms-btn-primary" style={{ background: 'var(--brand-secondary)' }} onClick={() => handleCall(item.id)}>
                 <Volume2 size={14} /> Call
               </button>
             )}
             {item.status === 'called' && (
-              <button className="saas-btn" style={{ background: '#10b981' }} onClick={() => handleComplete(item.id)}>
+              <button className="pms-btn-primary" style={{ background: '#10b981' }} onClick={() => handleComplete(item.id)}>
                 <CheckCircle size={14} /> Complete
               </button>
             )}
-            <button className="saas-btn-outline" style={{ padding: '6px', fontSize: '12px' }} onClick={() => deleteQueueItem(item.id)}>
+            <button className="pms-btn-outline" style={{ padding: '6px', fontSize: '12px' }} onClick={() => deleteQueueItem(item.id)}>
               <X size={14} />
             </button>
           </div>
@@ -108,12 +108,12 @@ export default function ReceptionQueue() {
 
   return (
     <div className="animate-fade-in-up">
-      <div className="pms-header" style={{ marginBottom: '24px' }}>
+      <div className="pms-page-header" style={{ marginBottom: '24px' }}>
         <div>
-          <h1 className="pms-header-title theme-text-primary">Digital Reception Queue</h1>
+          <h1 className="pms-page-title theme-text-primary">Digital Reception Queue</h1>
           <p className="theme-text-secondary" style={{ fontSize: '14px' }}>Manage walk-ins and guest requests efficiently.</p>
         </div>
-        <button className="saas-btn" onClick={() => setIsModalOpen(true)}>
+        <button className="pms-btn-primary" onClick={() => setIsModalOpen(true)}>
           <Plus size={16} /> Generate Token
         </button>
       </div>
@@ -174,7 +174,7 @@ export default function ReceptionQueue() {
           >
             <motion.div 
               initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-              className="saas-card" style={{ width: '100%', maxWidth: '400px', padding: '24px' }}
+              className="pms-card" style={{ width: '100%', maxWidth: '400px', padding: '24px' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <h3 style={{ fontSize: '18px', fontWeight: 600 }}>Issue New Token</h3>
@@ -184,12 +184,12 @@ export default function ReceptionQueue() {
               <div style={{ display: 'grid', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Guest Name / Ref</label>
-                  <input className="saas-input" value={formData.guest_name} onChange={e => setFormData({...formData, guest_name: e.target.value})} placeholder="e.g. Smith Family" />
+                  <input className="pms-input" value={formData.guest_name} onChange={e => setFormData({...formData, guest_name: e.target.value})} placeholder="e.g. Smith Family" />
                 </div>
                 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Purpose</label>
-                  <select className="saas-input" value={formData.purpose} onChange={e => setFormData({...formData, purpose: e.target.value})}>
+                  <select className="pms-input" value={formData.purpose} onChange={e => setFormData({...formData, purpose: e.target.value})}>
                     <option value="check_in">Check-in</option>
                     <option value="check_out">Check-out</option>
                     <option value="inquiry">Inquiry</option>
@@ -200,7 +200,7 @@ export default function ReceptionQueue() {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Priority</label>
-                  <select className="saas-input" value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})}>
+                  <select className="pms-input" value={formData.priority} onChange={e => setFormData({...formData, priority: e.target.value})}>
                     <option value="normal">Normal</option>
                     <option value="high">High</option>
                     <option value="urgent">Urgent</option>
@@ -210,12 +210,12 @@ export default function ReceptionQueue() {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: 'var(--text-secondary)' }}>Notes (Optional)</label>
-                  <textarea className="saas-input" rows="2" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="e.g. VIP guest, needs wheelchair"></textarea>
+                  <textarea className="pms-input" rows="2" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="e.g. VIP guest, needs wheelchair"></textarea>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
-                <button className="saas-btn" onClick={handleCreate} disabled={!formData.guest_name}>
+                <button className="pms-btn-primary" onClick={handleCreate} disabled={!formData.guest_name}>
                   Generate Token
                 </button>
               </div>

@@ -77,14 +77,14 @@ export default function Analytics() {
 
   return (
     <div className="animate-fade-in-up" style={{ paddingBottom: '40px' }}>
-      <div className="pms-header" style={{ marginBottom: '32px' }}>
+      <div className="pms-page-header" style={{ marginBottom: '32px' }}>
         <div>
-          <h1 className="pms-header-title theme-text-primary">Analytics & Intelligence</h1>
+          <h1 className="pms-page-title theme-text-primary">Analytics & Intelligence</h1>
           <p className="theme-text-secondary" style={{ fontSize: '14px', marginTop: '4px' }}>
             Comprehensive overview of hotel performance and financials.
           </p>
         </div>
-        <button className="saas-btn" onClick={exportData}>
+        <button className="pms-btn-primary" onClick={exportData}>
           <Download size={16} /> Export CSV
         </button>
       </div>
@@ -94,7 +94,7 @@ export default function Analytics() {
         {/* P&L Chart */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="saas-card" style={{ gridColumn: 'span 2', padding: '24px' }}
+          className="pms-card" style={{ gridColumn: 'span 2', padding: '24px' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <TrendingUp size={20} color="var(--brand-secondary)" />
@@ -128,7 +128,7 @@ export default function Analytics() {
         {/* Room Type Revenue */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="saas-card" style={{ padding: '24px' }}
+          className="pms-card" style={{ padding: '24px' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <BarChart3 size={20} color="var(--brand-secondary)" />
@@ -150,7 +150,7 @@ export default function Analytics() {
         {/* Booking Sources */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          className="saas-card" style={{ padding: '24px' }}
+          className="pms-card" style={{ padding: '24px' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <PieChartIcon size={20} color="var(--brand-secondary)" />

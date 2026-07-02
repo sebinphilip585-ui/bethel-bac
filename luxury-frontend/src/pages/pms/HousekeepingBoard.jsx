@@ -15,9 +15,9 @@ export default function HousekeepingBoard() {
 
   return (
     <div>
-      <div className="pms-header">
+      <div className="pms-page-header">
         <div>
-          <h1 className="pms-header-title">Housekeeping</h1>
+          <h1 className="pms-page-title">Housekeeping</h1>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-gray-500)' }}>
             Manage room cleaning and maintenance
           </p>
@@ -26,33 +26,33 @@ export default function HousekeepingBoard() {
 
       {/* Status Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-4)', marginBottom: 'var(--space-8)' }}>
-        <div className="stat-card" style={{ borderLeft: '4px solid #f59e0b' }}>
-          <div className="stat-card-icon" style={{ background: '#fffbeb', color: '#f59e0b' }}>
+        <div className="pms-stat-card" style={{ borderLeft: '4px solid #f59e0b' }}>
+          <div className="pms-stat-card-icon" style={{ background: '#fffbeb', color: '#f59e0b' }}>
             <Sparkles size={24} />
           </div>
-          <div className="stat-card-value">{cleaningRooms.length}</div>
-          <div className="stat-card-label">Needs Cleaning</div>
+          <div className="pms-stat-value">{cleaningRooms.length}</div>
+          <div className="pms-stat-label">Needs Cleaning</div>
         </div>
-        <div className="stat-card" style={{ borderLeft: '4px solid #6b7280' }}>
-          <div className="stat-card-icon" style={{ background: '#f3f4f6', color: '#6b7280' }}>
+        <div className="pms-stat-card" style={{ borderLeft: '4px solid #6b7280' }}>
+          <div className="pms-stat-card-icon" style={{ background: '#f3f4f6', color: '#6b7280' }}>
             <Wrench size={24} />
           </div>
-          <div className="stat-card-value">{maintenanceRooms.length}</div>
-          <div className="stat-card-label">Maintenance</div>
+          <div className="pms-stat-value">{maintenanceRooms.length}</div>
+          <div className="pms-stat-label">Maintenance</div>
         </div>
-        <div className="stat-card" style={{ borderLeft: '4px solid #ef4444' }}>
-          <div className="stat-card-icon" style={{ background: '#fef2f2', color: '#ef4444' }}>
+        <div className="pms-stat-card" style={{ borderLeft: '4px solid #ef4444' }}>
+          <div className="pms-stat-card-icon" style={{ background: '#fef2f2', color: '#ef4444' }}>
             <BedDouble size={24} />
           </div>
-          <div className="stat-card-value">{occupiedRooms.length}</div>
-          <div className="stat-card-label">Occupied</div>
+          <div className="pms-stat-value">{occupiedRooms.length}</div>
+          <div className="pms-stat-label">Occupied</div>
         </div>
-        <div className="stat-card" style={{ borderLeft: '4px solid #22c55e' }}>
-          <div className="stat-card-icon" style={{ background: '#f0fdf4', color: '#22c55e' }}>
+        <div className="pms-stat-card" style={{ borderLeft: '4px solid #22c55e' }}>
+          <div className="pms-stat-card-icon" style={{ background: '#f0fdf4', color: '#22c55e' }}>
             <CheckCircle size={24} />
           </div>
-          <div className="stat-card-value">{availableRooms.length}</div>
-          <div className="stat-card-label">Clean & Ready</div>
+          <div className="pms-stat-value">{availableRooms.length}</div>
+          <div className="pms-stat-label">Clean & Ready</div>
         </div>
       </div>
 
@@ -83,7 +83,7 @@ export default function HousekeepingBoard() {
                 </div>
                 <button
                   onClick={() => markRoomClean(room.id)}
-                  className="btn btn-primary btn-sm"
+                  className="pms-btn-primary"
                   style={{ fontSize: 'var(--text-xs)' }}
                 >
                   <CheckCircle size={14} /> Mark Clean
@@ -106,7 +106,7 @@ export default function HousekeepingBoard() {
           <button
             key={f.val}
             onClick={() => setFilter(f.val)}
-            className={`btn btn-sm ${filter === f.val ? 'btn-secondary' : 'btn-ghost'}`}
+            className={`pms-btn ${filter === f.val ? 'pms-btn-outline' : 'pms-btn-outline'}`}
             style={{ borderRadius: 'var(--radius-full)' }}
           >
             {f.label}
@@ -115,8 +115,8 @@ export default function HousekeepingBoard() {
       </div>
 
       {/* All Rooms Table */}
-      <div className="table-container">
-        <table className="table">
+      <div className="pms-table-container">
+        <table className="pms-table">
           <thead>
             <tr>
               <th>Room</th>
@@ -133,12 +133,12 @@ export default function HousekeepingBoard() {
                 <td>{room.room_type.name}</td>
                 <td>Floor {room.floor}</td>
                 <td>
-                  <span className={`badge ${
-                    room.status === 'available' ? 'badge-success' :
-                    room.status === 'cleaning' ? 'badge-warning' :
-                    room.status === 'occupied' ? 'badge-error' :
-                    room.status === 'maintenance' ? 'badge-navy' :
-                    'badge-info'
+                  <span className={`pms-badge ${
+                    room.status === 'available' ? 'pms-badge-success' :
+                    room.status === 'cleaning' ? 'pms-badge-warning' :
+                    room.status === 'occupied' ? 'pms-badge-error' :
+                    room.status === 'maintenance' ? 'pms-badge-navy' :
+                    'pms-badge-info'
                   }`}>
                     {room.status}
                   </span>
@@ -146,22 +146,22 @@ export default function HousekeepingBoard() {
                 <td>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     {room.status === 'cleaning' && (
-                      <button onClick={() => markRoomClean(room.id)} className="btn btn-primary btn-sm" style={{ fontSize: '11px' }}>
+                      <button onClick={() => markRoomClean(room.id)} className="pms-btn-primary" style={{ fontSize: '11px' }}>
                         <CheckCircle size={12} /> Clean
                       </button>
                     )}
                     {room.status === 'available' && (
-                      <button onClick={() => updateRoomStatus(room.id, 'cleaning')} className="btn btn-ghost btn-sm" style={{ fontSize: '11px' }}>
+                      <button onClick={() => updateRoomStatus(room.id, 'cleaning')} className="pms-btn-outline" style={{ fontSize: '11px' }}>
                         <Sparkles size={12} /> Request Clean
                       </button>
                     )}
                     {(room.status === 'available' || room.status === 'cleaning') && (
-                      <button onClick={() => markRoomMaintenance(room.id)} className="btn btn-ghost btn-sm" style={{ fontSize: '11px', color: '#6b7280' }}>
+                      <button onClick={() => markRoomMaintenance(room.id)} className="pms-btn-outline" style={{ fontSize: '11px', color: '#6b7280' }}>
                         <Wrench size={12} /> Maintenance
                       </button>
                     )}
                     {room.status === 'maintenance' && (
-                      <button onClick={() => markRoomClean(room.id)} className="btn btn-ghost btn-sm" style={{ fontSize: '11px', color: '#22c55e' }}>
+                      <button onClick={() => markRoomClean(room.id)} className="pms-btn-outline" style={{ fontSize: '11px', color: '#22c55e' }}>
                         <CheckCircle size={12} /> Resolve
                       </button>
                     )}

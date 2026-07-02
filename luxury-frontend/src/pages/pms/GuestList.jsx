@@ -68,9 +68,9 @@ export default function GuestList() {
 
   return (
     <div>
-      <div className="pms-header">
+      <div className="pms-page-header">
         <div>
-          <h1 className="pms-header-title">Guest Directory & Archives</h1>
+          <h1 className="pms-page-title">Guest Directory & Archives</h1>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-gray-500)' }}>
             Manage registered guests and lookup historic check-in liability/safety records
           </p>
@@ -84,7 +84,7 @@ export default function GuestList() {
       }}>
         <button
           onClick={() => { setActiveTab('directory'); setSearch(''); }}
-          className={`btn btn-sm ${activeTab === 'directory' ? 'btn-primary' : 'btn-ghost'}`}
+          className={`pms-btn ${activeTab === 'directory' ? 'pms-btn-primary' : 'pms-btn-outline'}`}
           style={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, padding: '8px 16px' }}
         >
           <Users size={16} style={{ marginRight: '6px' }} />
@@ -92,7 +92,7 @@ export default function GuestList() {
         </button>
         <button
           onClick={() => { setActiveTab('archives'); setSearch(''); }}
-          className={`btn btn-sm ${activeTab === 'archives' ? 'btn-primary' : 'btn-ghost'}`}
+          className={`pms-btn ${activeTab === 'archives' ? 'pms-btn-primary' : 'pms-btn-outline'}`}
           style={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, padding: '8px 16px' }}
         >
           <ClipboardList size={16} style={{ marginRight: '6px' }} />
@@ -100,7 +100,7 @@ export default function GuestList() {
         </button>
         <button
           onClick={() => window.print()}
-          className="btn btn-sm btn-outline"
+          className="pms-btn-outline"
           style={{ marginLeft: 'auto', padding: '8px 16px' }}
         >
           📄 Download PDF (Print)
@@ -111,7 +111,7 @@ export default function GuestList() {
       <div style={{ position: 'relative', maxWidth: '400px', marginBottom: 'var(--space-6)' }}>
         <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-gray-400)' }} />
         <input
-          className="form-input"
+          className="pms-input"
           style={{ paddingLeft: '36px' }}
           placeholder={activeTab === 'directory' ? "Search by name, email, or phone..." : "Search by name, room, or ID number..."}
           value={search}
@@ -185,8 +185,8 @@ export default function GuestList() {
 
       {/* Tab 2: Guest Check-in Liability & Safety Archives */}
       {activeTab === 'archives' && (
-        <div className="table-container animate-fade-in">
-          <table className="table">
+        <div className="pms-table-container animate-fade-in">
+          <table className="pms-table">
             <thead>
               <tr>
                 <th>Audit ID</th>
@@ -236,7 +236,7 @@ export default function GuestList() {
                       </div>
                     </td>
                     <td>
-                      <span className={`badge ${log.status === 'checked_in' ? 'badge-success' : 'badge-navy'}`}>
+                      <span className={`pms-badge ${log.status === 'checked_in' ? 'pms-badge-success' : 'pms-badge-navy'}`}>
                         {log.status === 'checked_in' ? 'ACTIVE' : 'COMPLETED'}
                       </span>
                     </td>
@@ -288,7 +288,7 @@ export default function GuestList() {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-gray-200)', paddingBottom: '8px', marginBottom: '16px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: 600 }}>Stay History</h3>
-                <button onClick={() => exportGuestCSV(selectedGuest)} className="btn btn-outline btn-sm">
+                <button onClick={() => exportGuestCSV(selectedGuest)} className="pms-btn-outline">
                   ⬇ Download CSV
                 </button>
               </div>
@@ -304,7 +304,7 @@ export default function GuestList() {
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontWeight: 600 }}>₹{b.total_amount?.toLocaleString()}</div>
-                        <span className={`badge ${b.status === 'checked_in' ? 'badge-success' : 'badge-navy'}`} style={{ fontSize: '10px' }}>
+                        <span className={`pms-badge ${b.status === 'checked_in' ? 'pms-badge-success' : 'pms-badge-navy'}`} style={{ fontSize: '10px' }}>
                           {b.status.replace('_', ' ')}
                         </span>
                       </div>
