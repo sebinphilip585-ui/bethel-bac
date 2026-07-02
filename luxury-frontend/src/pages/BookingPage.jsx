@@ -270,11 +270,17 @@ export default function BookingPage() {
                             <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px' }}>{room.name}</h4>
                             <span style={{ background: 'var(--color-gold-glow)', color: 'var(--color-gold)', padding: '2px 10px', borderRadius: 'var(--radius-full)', fontSize: '11px', fontWeight: 600 }}>{room.type}</span>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ color: 'var(--color-text-light)', fontSize: '13px' }}>
-                              {room.type === '1 BHK' ? '1-2 Guests' : room.type === '2 BHK' ? '3-4 Guests' : '5-6 Guests'}
+                          
+                          <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>🛏️ {room.type === '1 BHK' ? 'Queen Bed' : room.type === '2 BHK' ? 'King + Queen Bed' : 'King + 2 Queen Beds'}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>✨ Kitchen • Free Wi-Fi • Air Conditioning</div>
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                            <span style={{ color: 'var(--color-text-light)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <Users size={14} /> {room.type === '1 BHK' ? '1-2 Guests' : room.type === '2 BHK' ? '3-4 Guests' : '5-6 Guests'}
                             </span>
-                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '20px', color: 'var(--color-gold)', fontWeight: 600 }}>
+                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '20px', color: 'var(--color-gold)', fontWeight: 600, lineHeight: 1 }}>
                               ₹{room.price_per_night?.toLocaleString()}<span style={{ fontSize: '12px', color: 'var(--color-text-light)', fontFamily: 'var(--font-body)' }}>/night</span>
                             </span>
                           </div>
