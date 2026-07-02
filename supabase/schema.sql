@@ -1,323 +1,71 @@
--- ============================================================
--- BETHEL MEADOWS — Complete Database Schema
--- Run this in Supabase SQL Editor to create all tables
--- ============================================================
+-- Completely drop all existing tables to ensure a clean slate
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS rooms CASCADE;
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- ============================================================
--- PROFILES (extends Supabase auth.users)
--- ============================================================
-CREATE TABLE IF NOT EXISTS profiles (
-  id UUID PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin', 'manager', 'receptionist')) DEFAULT 'receptionist',
-  phone TEXT,
-  active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- ROOM TYPES
--- ============================================================
-CREATE TABLE IF NOT EXISTS room_types (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+-- Create the rooms table
+CREATE TABLE rooms (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE,
-  slug TEXT NOT NULL UNIQUE,
-  description TEXT,
-  short_description TEXT,
-  base_price DECIMAL(10,2) NOT NULL,
-  max_guests INTEGER DEFAULT 2,
-  size_sqft INTEGER,
-  bed_type TEXT,
-  facilities JSONB DEFAULT '[]'::jsonb,
-  images JSONB DEFAULT '[]'::jsonb,
-  featured BOOLEAN DEFAULT false,
-  active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- ROOMS
--- ============================================================
-CREATE TABLE IF NOT EXISTS rooms (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  room_number TEXT NOT NULL UNIQUE,
-  room_type_id UUID REFERENCES room_types(id) ON DELETE RESTRICT,
-  floor INTEGER,
-  status TEXT DEFAULT 'available' CHECK (status IN ('available', 'reserved', 'occupied', 'cleaning', 'maintenance')),
-  notes TEXT,
-  active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- GUESTS
--- ============================================================
-CREATE TABLE IF NOT EXISTS guests (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT,
-  phone TEXT,
-  id_type TEXT CHECK (id_type IN ('Aadhaar', 'Passport', 'Driving License', 'Voter ID', 'Other')),
-  id_number TEXT,
-  address TEXT,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- BOOKINGS
--- ============================================================
-CREATE TABLE IF NOT EXISTS bookings (
-  id TEXT PRIMARY KEY, -- BM-YYYYMMDD-XXXX format
-  guest_id UUID REFERENCES guests(id) ON DELETE SET NULL,
-  room_id UUID REFERENCES rooms(id) ON DELETE SET NULL,
-  room_type_id UUID REFERENCES room_types(id),
-  check_in DATE NOT NULL,
-  check_in_time TIME,
-  check_out DATE NOT NULL,
-  check_out_time TIME,
-  guests_count INTEGER DEFAULT 1,
-  status TEXT DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'checked_in', 'checked_out', 'cancelled', 'no_show')),
-  total_amount DECIMAL(10,2),
-  amount_paid DECIMAL(10,2) DEFAULT 0,
-  payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'partial', 'paid', 'refunded')),
-  source TEXT DEFAULT 'direct' CHECK (source IN ('direct', 'booking_com', 'agoda', 'makemytrip', 'expedia', 'goibibo', 'other')),
-  special_requests TEXT,
-  notes TEXT,
-  created_by UUID REFERENCES profiles(id),
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  
-  CONSTRAINT check_dates CHECK (check_out > check_in)
-);
-
--- ============================================================
--- PRICING RULES
--- ============================================================
-CREATE TABLE IF NOT EXISTS pricing_rules (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  name TEXT NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('weekend', 'season', 'occupancy', 'special')),
-  multiplier DECIMAL(5,2) NOT NULL DEFAULT 1.0,
-  start_date DATE,
-  end_date DATE,
-  threshold INTEGER, -- for occupancy rules
-  description TEXT,
-  active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- SPECIAL OFFERS
--- ============================================================
-CREATE TABLE IF NOT EXISTS special_offers (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  title TEXT NOT NULL,
-  description TEXT,
-  discount_percent INTEGER,
-  discount_amount DECIMAL(10,2),
-  code TEXT UNIQUE,
-  valid_from DATE,
-  valid_to DATE,
-  min_stay INTEGER DEFAULT 1,
-  max_uses INTEGER,
-  current_uses INTEGER DEFAULT 0,
-  active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- OTA BOOKINGS (Future - Channel Manager)
--- ============================================================
-CREATE TABLE IF NOT EXISTS ota_bookings (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  booking_id TEXT REFERENCES bookings(id),
-  ota_name TEXT NOT NULL,
-  ota_booking_ref TEXT,
-  ota_status TEXT DEFAULT 'pending',
-  commission_percent DECIMAL(5,2),
-  commission_amount DECIMAL(10,2),
-  synced_at TIMESTAMPTZ,
-  raw_data JSONB,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- CHANNEL MANAGER (Future)
--- ============================================================
-CREATE TABLE IF NOT EXISTS channel_connections (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  channel_name TEXT NOT NULL UNIQUE,
-  status TEXT DEFAULT 'disconnected' CHECK (status IN ('connected', 'disconnected', 'error', 'syncing')),
-  api_key TEXT,
-  last_sync TIMESTAMPTZ,
-  rooms_synced INTEGER DEFAULT 0,
-  config JSONB,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- REVENUE SNAPSHOTS (for historical tracking)
--- ============================================================
-CREATE TABLE IF NOT EXISTS revenue_snapshots (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  date DATE NOT NULL,
-  total_rooms INTEGER,
-  occupied_rooms INTEGER,
-  occupancy_percent DECIMAL(5,2),
-  total_revenue DECIMAL(10,2),
-  adr DECIMAL(10,2), -- Average Daily Rate
-  revpar DECIMAL(10,2), -- Revenue Per Available Room
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- INDEXES
--- ============================================================
-CREATE INDEX IF NOT EXISTS idx_bookings_check_in ON bookings(check_in);
-CREATE INDEX IF NOT EXISTS idx_bookings_check_out ON bookings(check_out);
-CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
-CREATE INDEX IF NOT EXISTS idx_bookings_guest ON bookings(guest_id);
-CREATE INDEX IF NOT EXISTS idx_bookings_room ON bookings(room_id);
-CREATE INDEX IF NOT EXISTS idx_rooms_status ON rooms(status);
-CREATE INDEX IF NOT EXISTS idx_rooms_type ON rooms(room_type_id);
-CREATE INDEX IF NOT EXISTS idx_guests_email ON guests(email);
-CREATE INDEX IF NOT EXISTS idx_guests_phone ON guests(phone);
-
--- ============================================================
--- ROW LEVEL SECURITY
--- ============================================================
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE room_types ENABLE ROW LEVEL SECURITY;
-ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE guests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE pricing_rules ENABLE ROW LEVEL SECURITY;
-ALTER TABLE special_offers ENABLE ROW LEVEL SECURITY;
-
--- Public read access for room types and offers (for website)
-DROP POLICY IF EXISTS "Room types are viewable by everyone" ON room_types;
-CREATE POLICY "Room types are viewable by everyone" ON room_types FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Active offers are viewable by everyone" ON special_offers;
-CREATE POLICY "Active offers are viewable by everyone" ON special_offers FOR SELECT USING (active = true);
-
--- Staff can manage everything based on role
-DROP POLICY IF EXISTS "Staff can view profiles" ON profiles;
-CREATE POLICY "Staff can view profiles" ON profiles FOR SELECT USING (auth.uid() = id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'manager')));
-DROP POLICY IF EXISTS "Admin can manage profiles" ON profiles;
-CREATE POLICY "Admin can manage profiles" ON profiles FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
-
-DROP POLICY IF EXISTS "Staff can view rooms" ON rooms;
-CREATE POLICY "Staff can view rooms" ON rooms FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
-DROP POLICY IF EXISTS "Admin can manage rooms" ON rooms;
-CREATE POLICY "Admin can manage rooms" ON rooms FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
-
-DROP POLICY IF EXISTS "Staff can view guests" ON guests;
-CREATE POLICY "Staff can view guests" ON guests FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
-DROP POLICY IF EXISTS "Staff can manage guests" ON guests;
-CREATE POLICY "Staff can manage guests" ON guests FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
-
-DROP POLICY IF EXISTS "Staff can view bookings" ON bookings;
-CREATE POLICY "Staff can view bookings" ON bookings FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
-DROP POLICY IF EXISTS "Staff can manage bookings" ON bookings;
-CREATE POLICY "Staff can manage bookings" ON bookings FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
-
-DROP POLICY IF EXISTS "Staff can view pricing" ON pricing_rules;
-CREATE POLICY "Staff can view pricing" ON pricing_rules FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()));
-DROP POLICY IF EXISTS "Admin can manage pricing" ON pricing_rules;
-CREATE POLICY "Admin can manage pricing" ON pricing_rules FOR ALL USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
-
--- ============================================================
--- SEED DATA
--- ============================================================
-INSERT INTO room_types (name, slug, description, short_description, base_price, max_guests, size_sqft, bed_type, facilities, images, featured) VALUES
-('Deluxe Room', 'deluxe-room', 'A beautifully appointed room featuring modern amenities and elegant wooden interiors.', 'Elegant comfort with modern amenities', 3500, 2, 320, 'King', '["Air Conditioning", "Smart TV", "Free WiFi", "Mini Bar", "Room Service", "Attached Bathroom", "Hot Water", "Wardrobe"]', '["/images/rooms/room-bed.jpg", "/images/rooms/room-ac.jpg"]', true),
-('Premium Suite', 'premium-suite', 'Spacious suite with separate living area and premium furnishings.', 'Spacious luxury with living area', 5500, 2, 480, 'King', '["Air Conditioning", "Smart TV 55\"", "Free WiFi", "Mini Bar", "Room Service", "Living Area", "Sofa Set", "Work Desk"]', '["/images/rooms/room-tv.jpg", "/images/rooms/room-sofa.jpg"]', true),
-('Family Suite', 'family-suite', 'Generously sized suite designed for families with separate sleeping and living areas.', 'Perfect for families with extra space', 7500, 4, 620, 'King + Twin', '["Air Conditioning", "Smart TV 55\"", "Free WiFi", "Room Service", "Living Area", "Dining Area", "Kitchenette"]', '["/images/rooms/room-living.jpg", "/images/rooms/room-sofa.jpg"]', true),
-('Executive Room', 'executive-room', 'A refined room designed for business travelers with dedicated work desk.', 'Designed for business travelers', 4500, 2, 380, 'King', '["Air Conditioning", "Smart TV", "High-Speed WiFi", "Mini Bar", "Work Desk", "Ergonomic Chair", "Laptop Safe"]', '["/images/rooms/room-ac.jpg", "/images/rooms/room-tv.jpg"]', false)
-ON CONFLICT (name) DO NOTHING;
-
--- ============================================================
--- EXPENSES
--- ============================================================
-CREATE TABLE IF NOT EXISTS expenses (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  category TEXT NOT NULL,
-  amount DECIMAL(10,2) NOT NULL,
-  description TEXT,
-  date DATE NOT NULL,
-  vendor_name TEXT,
-  payment_status TEXT DEFAULT 'Paid',
-  created_by UUID REFERENCES profiles(id),
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- CALENDAR EVENTS
--- ============================================================
-CREATE TABLE IF NOT EXISTS calendar_events (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  title TEXT NOT NULL,
-  start_time TIMESTAMPTZ NOT NULL,
-  end_time TIMESTAMPTZ NOT NULL,
-  type TEXT DEFAULT 'meeting',
-  description TEXT,
-  color TEXT DEFAULT '#3b82f6',
-  staff_id UUID REFERENCES profiles(id),
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- DIGITAL QUEUE
--- ============================================================
-CREATE TABLE IF NOT EXISTS digital_queue (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  token_number TEXT NOT NULL,
-  guest_name TEXT NOT NULL,
-  purpose TEXT NOT NULL,
-  priority TEXT DEFAULT 'normal',
-  notes TEXT,
-  status TEXT DEFAULT 'waiting',
-  joined_at TIMESTAMPTZ DEFAULT now(),
-  completed_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- ============================================================
--- NOTIFICATIONS
--- ============================================================
-CREATE TABLE IF NOT EXISTS notifications (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  title TEXT NOT NULL,
-  message TEXT NOT NULL,
-  priority TEXT DEFAULT 'low',
   type TEXT NOT NULL,
-  link TEXT,
-  read BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT now()
+  price_per_night INTEGER NOT NULL,
+  description TEXT,
+  images TEXT[] DEFAULT '{}',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Row Level Security for new tables
-ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE digital_queue ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+-- Create the bookings table
+CREATE TABLE bookings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+  guest_name TEXT NOT NULL,
+  guest_email TEXT NOT NULL,
+  guest_phone TEXT NOT NULL,
+  check_in DATE NOT NULL,
+  check_out DATE NOT NULL,
+  total_price INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'confirmed', -- Can be 'confirmed', 'cancelled'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  
+  CONSTRAINT valid_dates CHECK (check_out > check_in)
+);
 
-DROP POLICY IF EXISTS "Staff can view expenses" ON expenses;
-CREATE POLICY "Staff can view expenses" ON expenses FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Staff can view calendar" ON calendar_events;
-CREATE POLICY "Staff can view calendar" ON calendar_events FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Staff can view queue" ON digital_queue;
-CREATE POLICY "Staff can view queue" ON digital_queue FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Staff can view notifications" ON notifications;
-CREATE POLICY "Staff can view notifications" ON notifications FOR SELECT USING (true);
+-- Insert the official room list
+INSERT INTO rooms (name, type, price_per_night, images) VALUES
+('Beckingham', '2 BHK', 4500, ARRAY['/images/media__1782958486604.jpg']),
+('Beverly Hills', '2 BHK', 4500, ARRAY['/images/media__1782958486624.jpg']),
+('Belrose', '1 BHK', 2500, ARRAY['/images/media__1782958486674.jpg']),
+('Blooms Bay', '2 BHK', 4500, ARRAY['/images/media__1782958486920.jpg']),
+('Blue Bell', '1 BHK', 2500, ARRAY['/images/media__1782958486604.jpg']),
+('Beehive', '1 BHK', 2500, ARRAY['/images/media__1782958486624.jpg']),
+('Belarus', '3 BHK', 6500, ARRAY['/images/media__1782958486674.jpg']),
+('Breeze Garden', '1 BHK', 2500, ARRAY['/images/media__1782958486920.jpg']),
+('Brook Hills', '1 BHK', 2500, ARRAY['/images/media__1782958486604.jpg']),
+('Bliss Heaven', '1 BHK', 2500, ARRAY['/images/media__1782958486624.jpg']);
+
+-- Enable Row Level Security
+ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+
+-- Setup RLS Policies
+
+-- Anyone can read rooms (public)
+CREATE POLICY "Public can view rooms"
+ON rooms FOR SELECT
+TO public
+USING (true);
+
+-- Anyone can insert a booking
+CREATE POLICY "Public can create bookings"
+ON bookings FOR INSERT
+TO public
+WITH CHECK (true);
+
+-- Only authenticated users/admins can view bookings (assuming admin uses auth)
+-- Since we are doing a simple rebuild and public bookings, we might want public to read their own booking (maybe by ID later).
+-- For now, we will allow read access to bookings for testing, but in production, we restrict it.
+CREATE POLICY "Public can view bookings"
+ON bookings FOR SELECT
+TO public
+USING (true); -- For demo/simplicity, you might restrict this in a real prod env.
+
+-- Admins can update/delete (requires setting up Supabase auth later)

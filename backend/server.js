@@ -1,90 +1,123 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// Load routers
-
-import authRouter from './routes/auth.js';
-import roomsRouter from './routes/rooms.js';
-import bookingsRouter from './routes/bookings.js';
-import guestsRouter from './routes/guests.js';
-import pricingRouter from './routes/pricing.js';
-import usersRouter from './routes/users.js';
-import expensesRouter from './routes/expenses.js';
-import calendarRouter from './routes/calendar.js';
-import queueRouter from './routes/queue.js';
-
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+require('dotenv').config({ path: '../.env' }); // Load from root
+const express = require('express');
+const cors = require('cors');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const port = process.env.PORT || 5000;
 
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import './backupService.js'; // Initialize automated backups
-
-// High Security Middleware
-app.use(helmet()); // Secure HTTP headers
 app.use(cors());
 app.use(express.json());
 
-// Global Rate Limiting
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Limit each IP to 200 requests per windowMs
-  message: { error: 'Too many requests from this IP, please try again later.' }
-});
-app.use('/api', globalLimiter);
+// Supabase client setup
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-import notificationsRouter from './routes/notifications.js';
-
-app.use('/api/auth', authRouter);
-app.use('/api/rooms', roomsRouter);
-app.use('/api/bookings', bookingsRouter);
-app.use('/api/guests', guestsRouter);
-app.use('/api/pricing', pricingRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/expenses', expensesRouter);
-app.use('/api/calendar', calendarRouter);
-app.use('/api/queue', queueRouter);
-app.use('/api/notifications', notificationsRouter);
-
-// Basic health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date() });
+// GET all rooms
+app.get('/api/rooms', async (req, res) => {
+  const { data, error } = await supabase.from('rooms').select('*');
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
-// Root endpoint for browser visits
-app.get('/', (req, res) => {
-  res.send(`
-    <html>
-      <head>
-        <title>Bethel Meadows API</title>
-        <style>
-          body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #0f172a; color: white; }
-          h1 { color: #facc15; }
-          p { color: #94a3b8; }
-        </style>
-      </head>
-      <body>
-        <h1>🏨 Bethel Meadows API Server</h1>
-        <p>The backend server is running successfully!</p>
-        <p>Base API endpoint: <code>/api</code></p>
-      </body>
-    </html>
-  `);
-});
-// Global Error Handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong on the server!' });
+// GET specific room
+app.get('/api/rooms/:id', async (req, res) => {
+  const { id } = req.params;
+  const { data, error } = await supabase.from('rooms').select('*').eq('id', id).single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
 });
 
-app.listen(PORT, () => {
-  console.log(`Bethel Meadows API Server running on port ${PORT}`);
+// GET availability
+app.get('/api/availability', async (req, res) => {
+  const { roomId, checkIn, checkOut } = req.query;
+  
+  if (!roomId || !checkIn || !checkOut) {
+    return res.status(400).json({ error: 'Missing required parameters' });
+  }
+
+  // Check if there are any conflicting bookings
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('id')
+    .eq('room_id', roomId)
+    .not('status', 'eq', 'cancelled')
+    .or(`and(check_in.lte.${checkOut},check_out.gte.${checkIn})`); // Overlap logic
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  const isAvailable = data.length === 0;
+  res.json({ available: isAvailable });
+});
+
+// POST create booking
+app.post('/api/bookings', async (req, res) => {
+  const { roomId, guestName, guestEmail, guestPhone, checkIn, checkOut } = req.body;
+
+  if (!roomId || !guestName || !guestEmail || !guestPhone || !checkIn || !checkOut) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    // 1. Verify Room Exists & Get Price
+    const { data: room, error: roomError } = await supabase
+      .from('rooms')
+      .select('price_per_night')
+      .eq('id', roomId)
+      .single();
+
+    if (roomError || !room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+
+    // 2. Check Availability
+    const { data: conflicts, error: conflictError } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('room_id', roomId)
+      .not('status', 'eq', 'cancelled')
+      .or(`and(check_in.lte.${checkOut},check_out.gte.${checkIn})`);
+
+    if (conflictError) return res.status(500).json({ error: conflictError.message });
+    if (conflicts.length > 0) return res.status(400).json({ error: 'Room is not available for these dates' });
+
+    // 3. Calculate Total Price securely
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 0) return res.status(400).json({ error: 'Invalid dates' });
+
+    const totalPrice = diffDays * room.price_per_night;
+
+    // 4. Create Booking
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .insert([
+        {
+          room_id: roomId,
+          guest_name: guestName,
+          guest_email: guestEmail,
+          guest_phone: guestPhone,
+          check_in: checkIn,
+          check_out: checkOut,
+          total_price: totalPrice,
+          status: 'confirmed'
+        }
+      ])
+      .select();
+
+    if (bookingError) throw bookingError;
+
+    res.status(201).json({ message: 'Booking confirmed', booking: booking[0] });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Backend server running on port ${port}`);
 });

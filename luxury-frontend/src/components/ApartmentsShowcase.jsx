@@ -1,23 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Maximize, Users, ArrowRight } from 'lucide-react';
 
-const apartments = [
-  { name: 'Beckingham', bhk: '2BHK', price: 4500, image: 'https://images.unsplash.com/photo-1598928506311-c55d40f92716?auto=format&fit=crop&q=80' },
-  { name: 'Beverly Hills', bhk: '2BHK', price: 4500, image: 'https://images.unsplash.com/photo-1502672260266-1c1e87418fd6?auto=format&fit=crop&q=80' },
-  { name: 'Belrose', bhk: '1BHK', price: 2500, image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80' },
-  { name: 'Blooms Bay', bhk: '2BHK', price: 4500, image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80' },
-  { name: 'Blue Bell', bhk: '1BHK', price: 2500, image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80' },
-  { name: 'Beehive', bhk: '1BHK', price: 2500, image: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&q=80' },
-  { name: 'Belarus', bhk: '3BHK', price: 6500, image: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80' },
-  { name: 'Breeze Garden', bhk: '1BHK', price: 2500, image: 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&q=80' },
-  { name: 'Brook Hills', bhk: '1BHK', price: 2500, image: 'https://images.unsplash.com/photo-1593696140826-c58b021acf8b?auto=format&fit=crop&q=80' },
-  { name: 'Bliss Heaven', bhk: '1BHK', price: 2500, image: 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&q=80' },
-];
-
 export default function ApartmentsShowcase() {
+  const [apartments, setApartments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/rooms');
+        if (!response.ok) throw new Error('Failed to fetch rooms');
+        const data = await response.json();
+        
+        // Sort rooms so they always appear in the same order
+        data.sort((a, b) => a.name.localeCompare(b.name));
+        
+        setApartments(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchRooms();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="section-padding" style={{ backgroundColor: 'var(--color-bg-alt)', textAlign: 'center' }}>
+        <div style={{ color: 'var(--color-gold)', fontFamily: 'var(--font-heading)', fontSize: '24px' }}>
+          Loading Luxurious Rooms...
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="section-padding" style={{ backgroundColor: 'var(--color-bg-alt)', textAlign: 'center' }}>
+        <div style={{ color: 'red', fontFamily: 'var(--font-heading)', fontSize: '24px' }}>
+          Error: {error}
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="section-padding" style={{ backgroundColor: 'var(--color-bg-alt)' }}>
+    <section id="apartments" className="section-padding" style={{ backgroundColor: 'var(--color-bg-alt)' }}>
       <div className="container">
         <div className="section-title">
           <motion.p
@@ -41,11 +73,11 @@ export default function ApartmentsShowcase() {
         <div className="grid grid-cols-3">
           {apartments.map((apt, index) => (
             <motion.div
-              key={apt.name}
+              key={apt.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: (index % 3) * 0.1 }}
               style={{
                 backgroundColor: 'var(--color-cards)',
                 boxShadow: 'var(--shadow-luxury)',
@@ -58,7 +90,7 @@ export default function ApartmentsShowcase() {
             >
               <div style={{ position: 'relative', overflow: 'hidden', height: '280px' }}>
                 <img 
-                  src={apt.image} 
+                  src={apt.images && apt.images.length > 0 ? apt.images[0] : 'https://images.unsplash.com/photo-1598928506311-c55d40f92716?auto=format&fit=crop&q=80'} 
                   alt={apt.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'var(--transition-smooth)' }}
                   className="apartment-img"
@@ -74,7 +106,7 @@ export default function ApartmentsShowcase() {
                   color: 'var(--color-text)',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                 }}>
-                  ₹{apt.price.toLocaleString()} <span style={{ fontSize: '12px', color: 'var(--color-text-light)', fontFamily: 'var(--font-body)' }}>/ Night</span>
+                  ₹{apt.price_per_night.toLocaleString()} <span style={{ fontSize: '12px', color: 'var(--color-text-light)', fontFamily: 'var(--font-body)' }}>/ Night</span>
                 </div>
               </div>
 
@@ -84,11 +116,11 @@ export default function ApartmentsShowcase() {
                 <div style={{ display: 'flex', gap: '24px', marginBottom: '24px', borderBottom: '1px solid var(--color-border)', paddingBottom: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-light)', fontSize: '14px' }}>
                     <Maximize size={18} color="var(--color-gold)" />
-                    {apt.bhk}
+                    {apt.type}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-light)', fontSize: '14px' }}>
                     <Users size={18} color="var(--color-gold)" />
-                    {apt.bhk === '1BHK' ? '1-2 Guests' : apt.bhk === '2BHK' ? '3-4 Guests' : '5-6 Guests'}
+                    {apt.type === '1 BHK' ? '1-2 Guests' : apt.type === '2 BHK' ? '3-4 Guests' : '5-6 Guests'}
                   </div>
                 </div>
 

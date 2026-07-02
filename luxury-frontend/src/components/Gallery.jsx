@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 const images = [
+  '/images/media__1782958486604.jpg',
+  '/images/media__1782958486624.jpg',
+  '/images/media__1782958486674.jpg',
+  '/images/media__1782958486920.jpg',
   'https://images.unsplash.com/photo-1542314831-c6a4d14d8c85?auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1574643033890-3330e791696b?auto=format&fit=crop&q=80'
+  'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&q=80'
 ];
 
 export default function Gallery() {
