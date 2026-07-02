@@ -1,5 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import { supabase } from '../database/supabase.js';
 import { authenticateToken } from '../middleware/auth.js';
 
@@ -9,6 +10,16 @@ let clients = [];
 
 // GET /api/notifications/stream (Real-time updates)
 router.get('/stream', (req, res) => {
+  const token = req.query.token;
+  if (!token) return res.status(401).json({ error: 'Access token required' });
+
+  const JWT_SECRET = process.env.JWT_SECRET || 'bethelmeadows-super-secret-key-987';
+  try {
+    jwt.verify(token, JWT_SECRET);
+  } catch (err) {
+    return res.status(403).json({ error: 'Invalid or expired token' });
+  }
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');

@@ -87,6 +87,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   check_out_time TIME,
   identity_card TEXT,
   card_details TEXT,
+  actual_check_in_time TIMESTAMPTZ,
+  actual_check_out_time TIMESTAMPTZ,
   guests_count INTEGER DEFAULT 1,
   status TEXT DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'checked_in', 'checked_out', 'cancelled', 'no_show')),
   total_amount DECIMAL(10,2),
@@ -242,12 +244,43 @@ CREATE POLICY "Admin can manage pricing" ON pricing_rules FOR ALL USING (EXISTS 
 -- ============================================================
 -- SEED DATA
 -- ============================================================
-INSERT INTO room_types (name, slug, description, short_description, base_price, max_guests, size_sqft, bed_type, facilities, images, featured) VALUES
-('Deluxe Room', 'deluxe-room', 'A beautifully appointed room featuring modern amenities and elegant wooden interiors.', 'Elegant comfort with modern amenities', 3500, 2, 320, 'King', '["Air Conditioning", "Smart TV", "Free WiFi", "Mini Bar", "Room Service", "Attached Bathroom", "Hot Water", "Wardrobe"]', '["/images/rooms/room-bed.jpg", "/images/rooms/room-ac.jpg"]', true),
-('Premium Suite', 'premium-suite', 'Spacious suite with separate living area and premium furnishings.', 'Spacious luxury with living area', 5500, 2, 480, 'King', '["Air Conditioning", "Smart TV 55\"", "Free WiFi", "Mini Bar", "Room Service", "Living Area", "Sofa Set", "Work Desk"]', '["/images/rooms/room-tv.jpg", "/images/rooms/room-sofa.jpg"]', true),
-('Family Suite', 'family-suite', 'Generously sized suite designed for families with separate sleeping and living areas.', 'Perfect for families with extra space', 7500, 4, 620, 'King + Twin', '["Air Conditioning", "Smart TV 55\"", "Free WiFi", "Room Service", "Living Area", "Dining Area", "Kitchenette"]', '["/images/rooms/room-living.jpg", "/images/rooms/room-sofa.jpg"]', true),
-('Executive Room', 'executive-room', 'A refined room designed for business travelers with dedicated work desk.', 'Designed for business travelers', 4500, 2, 380, 'King', '["Air Conditioning", "Smart TV", "High-Speed WiFi", "Mini Bar", "Work Desk", "Ergonomic Chair", "Laptop Safe"]', '["/images/rooms/room-ac.jpg", "/images/rooms/room-tv.jpg"]', false)
-ON CONFLICT (name) DO NOTHING;
+-- Clear old trial rooms if they exist
+DELETE FROM rooms WHERE room_number IN ('101', '102', '201');
+DELETE FROM room_types WHERE name IN ('Deluxe Room', 'Premium Suite', 'Family Suite', 'Executive Room');
+
+INSERT INTO room_types (name, slug, description, short_description, base_price, max_guests, size_sqft, bed_type) VALUES
+('Beckingham', 'beckingham', 'Luxury 2 BHK Apartment', '2 BHK', 4500, 4, 800, 'King'),
+('Beverly Hills', 'beverly-hills', 'Luxury 2 BHK Apartment', '2 BHK', 4500, 4, 800, 'King'),
+('Belrose', 'belrose', 'Luxury 1 BHK Apartment', '1 BHK', 2500, 2, 400, 'King'),
+('Blooms Bay', 'blooms-bay', 'Luxury 2 BHK Apartment', '2 BHK', 4500, 4, 800, 'King'),
+('Blue Bell', 'blue-bell', 'Luxury 1 BHK Apartment', '1 BHK', 2500, 2, 400, 'King'),
+('Beehive', 'beehive', 'Luxury 1 BHK Apartment', '1 BHK', 2500, 2, 400, 'King'),
+('Belarus', 'belarus', 'Luxury 3 BHK Apartment', '3 BHK', 6500, 6, 1200, 'King'),
+('Breeze Garden', 'breeze-garden', 'Luxury 1 BHK Apartment', '1 BHK', 2500, 2, 400, 'King'),
+('Brook Hills', 'brook-hills', 'Luxury 1 BHK Apartment', '1 BHK', 2500, 2, 400, 'King'),
+('Bliss Heaven', 'bliss-heaven', 'Luxury 1 BHK Apartment', '1 BHK', 2500, 2, 400, 'King')
+ON CONFLICT (name) DO UPDATE SET base_price = EXCLUDED.base_price, short_description = EXCLUDED.short_description;
+
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BKG-01', id, 1 FROM room_types WHERE name = 'Beckingham' ON CONFLICT DO NOTHING;
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BVH-01', id, 1 FROM room_types WHERE name = 'Beverly Hills' ON CONFLICT DO NOTHING;
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BLR-01', id, 1 FROM room_types WHERE name = 'Belrose' ON CONFLICT DO NOTHING;
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BLB-01', id, 1 FROM room_types WHERE name = 'Blooms Bay' ON CONFLICT DO NOTHING;
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BBL-01', id, 1 FROM room_types WHERE name = 'Blue Bell' ON CONFLICT DO NOTHING;
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BHV-01', id, 1 FROM room_types WHERE name = 'Beehive' ON CONFLICT DO NOTHING;
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BLS-01', id, 1 FROM room_types WHERE name = 'Belarus' ON CONFLICT DO NOTHING;
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BRG-01', id, 1 FROM room_types WHERE name = 'Breeze Garden' ON CONFLICT DO NOTHING;
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BRH-01', id, 1 FROM room_types WHERE name = 'Brook Hills' ON CONFLICT DO NOTHING;
+INSERT INTO rooms (room_number, room_type_id, floor) 
+SELECT 'BLH-01', id, 1 FROM room_types WHERE name = 'Bliss Heaven' ON CONFLICT DO NOTHING;
 
 -- ============================================================
 -- EXPENSES
@@ -323,3 +356,67 @@ DROP POLICY IF EXISTS "Staff can view queue" ON digital_queue;
 CREATE POLICY "Staff can view queue" ON digital_queue FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Staff can view notifications" ON notifications;
 CREATE POLICY "Staff can view notifications" ON notifications FOR SELECT USING (true);
+
+-- ============================================================
+-- ACTIVITY TIMELINE (Audit Logs)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS activity_timeline (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  booking_id TEXT REFERENCES bookings(id) ON DELETE CASCADE,
+  action TEXT NOT NULL, 
+  description TEXT,
+  actor_id UUID REFERENCES profiles(id),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ============================================================
+-- INVENTORY ITEMS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS inventory_items (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT,
+  quantity INTEGER DEFAULT 0,
+  min_threshold INTEGER DEFAULT 5,
+  unit TEXT,
+  last_restocked TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ============================================================
+-- STAFF ATTENDANCE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS staff_attendance (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  staff_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  check_in TIMESTAMPTZ NOT NULL,
+  check_out TIMESTAMPTZ,
+  status TEXT DEFAULT 'present',
+  date DATE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ============================================================
+-- HOUSEKEEPING TASKS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS housekeeping_tasks (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
+  staff_id UUID REFERENCES profiles(id),
+  task_type TEXT DEFAULT 'cleaning',
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed')),
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE activity_timeline ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE staff_attendance ENABLE ROW LEVEL SECURITY;
+ALTER TABLE housekeeping_tasks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Staff can view activity" ON activity_timeline FOR SELECT USING (true);
+CREATE POLICY "Staff can view inventory" ON inventory_items FOR SELECT USING (true);
+CREATE POLICY "Staff can view attendance" ON staff_attendance FOR SELECT USING (true);
+CREATE POLICY "Staff can view housekeeping" ON housekeeping_tasks FOR SELECT USING (true);

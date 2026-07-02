@@ -243,6 +243,14 @@ router.post('/', async (req, res) => {
 
     const finalBooking = await getFullBooking(newBooking.id);
 
+    // Audit log
+    await supabase.from('activity_timeline').insert([{
+      booking_id: newBooking.id,
+      action: 'Booking Created',
+      description: `Created via ${source}`,
+      actor_id: req.user?.id || null
+    }]);
+
     try {
       const { createNotification } = await import('./notifications.js');
       createNotification(
@@ -289,9 +297,9 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     // Handle timestamps for status changes
     if (updates.status) {
       if (updates.status === 'checked_in' && current.status !== 'checked_in') {
-        updates.actual_check_in = new Date().toISOString();
+        updates.actual_check_in_time = new Date().toISOString();
       } else if (updates.status === 'checked_out' && current.status !== 'checked_out') {
-        updates.actual_check_out = new Date().toISOString();
+        updates.actual_check_out_time = new Date().toISOString();
       }
     }
 
@@ -321,6 +329,18 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     }
 
     if (updates.status && updates.status !== current.status) {
+      let actionText = 'Booking Updated';
+      if (updates.status === 'checked_in') actionText = 'Guest Checked In';
+      else if (updates.status === 'checked_out') actionText = 'Guest Checked Out';
+      else if (updates.status === 'cancelled') actionText = 'Booking Cancelled';
+
+      await supabase.from('activity_timeline').insert([{
+        booking_id: bookingId,
+        action: actionText,
+        description: `Status changed from ${current.status} to ${updates.status}`,
+        actor_id: req.user?.id || null
+      }]);
+
       try {
         const { createNotification } = await import('./notifications.js');
         createNotification('Booking Update', `Booking ${bookingId.substring(0,8)} status changed to ${updates.status}`, 'low', 'booking_update', '/admin/reservations');
@@ -345,10 +365,26 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
     if (!current) return res.status(404).json({ error: 'Booking not found' });
 
     const updates = { status };
-    if (status === 'checked_in') updates.actual_check_in = new Date().toISOString();
-    else if (status === 'checked_out') updates.actual_check_out = new Date().toISOString();
+    let actionText = 'Booking Updated';
+    
+    if (status === 'checked_in') {
+      updates.actual_check_in_time = new Date().toISOString();
+      actionText = 'Guest Checked In';
+    } else if (status === 'checked_out') {
+      updates.actual_check_out_time = new Date().toISOString();
+      actionText = 'Guest Checked Out';
+    } else if (status === 'cancelled') {
+      actionText = 'Booking Cancelled';
+    }
 
     await supabase.from('bookings').update(updates).eq('id', bookingId);
+
+    await supabase.from('activity_timeline').insert([{
+      booking_id: bookingId,
+      action: actionText,
+      description: `Status changed from ${current.status} to ${status}`,
+      actor_id: req.user?.id || null
+    }]);
 
     const targetRoomId = room_id || current.room_id;
     if (targetRoomId) {
@@ -386,6 +422,13 @@ router.put('/:id/payment', authenticateToken, async (req, res) => {
     await supabase.from('bookings').update({
       amount_paid: newAmount, payment_status: newStatus, payment_method: payment_method || null, payment_source: payment_source || null
     }).eq('id', bookingId);
+
+    await supabase.from('activity_timeline').insert([{
+      booking_id: bookingId,
+      action: 'Payment Received',
+      description: `Amount: ₹${amount_paid}. Status: ${newStatus}`,
+      actor_id: req.user?.id || null
+    }]);
 
     const updated = await getFullBooking(bookingId);
     res.json(updated);
