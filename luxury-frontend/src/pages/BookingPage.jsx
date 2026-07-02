@@ -97,16 +97,26 @@ export default function BookingPage() {
     setSubmitting(true);
     try {
       const data = await api.createBooking({
+        roomTypeId: selectedRoom.room_type_id,
         roomId: formData.roomId,
         guestName: formData.guestName,
         guestEmail: formData.guestEmail,
         guestPhone: formData.guestPhone,
+        guestIdType: 'aadhaar', // Default for now
+        guestIdNumber: formData.identityCard,
         checkIn: formData.checkIn,
         checkOut: formData.checkOut,
-        identityCard: formData.identityCard,
-        cardDetails: formData.cardDetails,
         checkInTime: formData.checkInTime,
-        checkOutTime: formData.checkOutTime
+        checkOutTime: formData.checkOutTime,
+        guests: formData.adults + formData.children,
+        totalAmount: total,
+        amountPaid: 0,
+        paymentStatus: 'pending',
+        paymentMethod: 'Pay at Hotel',
+        paymentSource: 'Web Booking',
+        specialRequests: formData.specialRequests,
+        identity_card: formData.identityCard,
+        card_details: formData.cardDetails
       });
       setBooking(data.booking || data);
       setStep(5);
