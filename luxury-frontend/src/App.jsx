@@ -23,6 +23,8 @@ const RoomDetail = lazy(() => import('./pages/RoomDetail'));
 const BookingPage = lazy(() => import('./pages/BookingPage'));
 const GuestPortal = lazy(() => import('./pages/GuestPortal'));
 
+import ErrorBoundary from './components/ui/ErrorBoundary';
+
 // PMS Pages
 const PMSDashboard = lazy(() => import('./pages/pms/PMSDashboard'));
 const ReservationList = lazy(() => import('./pages/pms/ReservationList'));
@@ -65,84 +67,117 @@ function App() {
         <AuthProvider>
           <ScrollToTop />
           <ToastContainer />
-          <Routes>
-            {/* Admin Login */}
-            <Route path="/admin/login" element={<LoginPage />} />
+          <ErrorBoundary>
+            <Routes>
+              {/* Admin Login */}
+              <Route path="/admin/login" element={<LoginPage />} />
 
-            {/* Protected Admin Routes (Old PMS) */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute roles={['admin', 'manager', 'receptionist']}>
-                  <Suspense fallback={<LoadingScreen />}>
-                    <PMSLayout />
-                  </Suspense>
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<PMSDashboard />} />
-              <Route path="queue" element={<ReceptionQueue />} />
-              <Route path="reservations" element={<ReservationList />} />
-              <Route path="calendar" element={<CalendarView />} />
-              <Route path="rooms" element={<RoomStatusBoard />} />
-              <Route path="guests" element={<GuestList />} />
-              <Route path="housekeeping" element={<HousekeepingBoard />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="ai-assistant" element={<AIAssistant />} />
-              <Route path="expenses" element={
-                <ProtectedRoute roles={['admin', 'manager']}>
-                  <Expenses />
-                </ProtectedRoute>
-              } />
-              <Route path="revenue" element={
-                <ProtectedRoute roles={['admin', 'manager']}>
-                  <RevenueDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="rooms-manage" element={
-                <ProtectedRoute roles={['admin']}>
-                  <RoomManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="pricing" element={
-                <ProtectedRoute roles={['admin']}>
-                  <PricingManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="users" element={
-                <ProtectedRoute roles={['admin']}>
-                  <UserManagement />
-                </ProtectedRoute>
-              } />
-              <Route path="reports" element={
-                <ProtectedRoute roles={['admin', 'manager']}>
-                  <Reports />
-                </ProtectedRoute>
-              } />
-              <Route path="channel-manager" element={
-                <ProtectedRoute roles={['admin']}>
-                  <ChannelManager />
-                </ProtectedRoute>
-              } />
-            </Route>
-            
-            {/* Public routes with luxury navbar/footer */}
-            <Route path="*" element={
-              <>
-                <Navbar />
+              {/* Protected Admin Routes (Old PMS) */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute roles={['admin', 'manager', 'receptionist']}>
+                    <Suspense fallback={<LoadingScreen />}>
+                      <PMSLayout />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<PMSDashboard />} />
+                <Route path="queue" element={<ReceptionQueue />} />
+                <Route path="reservations" element={<ReservationList />} />
+                <Route path="calendar" element={<CalendarView />} />
+                <Route path="rooms" element={<RoomStatusBoard />} />
+                <Route path="guests" element={<GuestList />} />
+                <Route path="housekeeping" element={<HousekeepingBoard />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="ai-assistant" element={<AIAssistant />} />
+                <Route path="expenses" element={
+                  <ProtectedRoute roles={['admin', 'manager']}>
+                    <Expenses />
+                  </ProtectedRoute>
+                } />
+                <Route path="revenue" element={
+                  <ProtectedRoute roles={['admin', 'manager']}>
+                    <RevenueDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="channel" element={
+                  <ProtectedRoute roles={['admin', 'manager']}>
+                    <ChannelManager />
+                  </ProtectedRoute>
+                } />
+                <Route path="settings" element={
+                  <ProtectedRoute roles={['admin']}>
+                    <div>Settings Page Placeholder</div>
+                  </ProtectedRoute>
+                } />
+                <Route path="users" element={
+                  <ProtectedRoute roles={['admin']}>
+                    <UserManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="rooms/manage" element={
+                  <ProtectedRoute roles={['admin']}>
+                    <RoomManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="pricing" element={
+                  <ProtectedRoute roles={['admin', 'manager']}>
+                    <PricingManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="reports" element={
+                  <ProtectedRoute roles={['admin', 'manager']}>
+                    <Reports />
+                  </ProtectedRoute>
+                } />
+              </Route>
+
+              {/* Public Luxury Routes */}
+              <Route path="/" element={
                 <Suspense fallback={<LoadingScreen />}>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/rooms/:id" element={<RoomDetail />} />
-                    <Route path="/booking" element={<BookingPage />} />
-                    <Route path="/guest-portal" element={<GuestPortal />} />
-                  </Routes>
+                  <div className="app-container">
+                    <Navbar />
+                    <Home />
+                    <FloatingContact />
+                    <Footer />
+                  </div>
                 </Suspense>
-                <Footer />
-                <FloatingContact />
-              </>
-            } />
-          </Routes>
+              } />
+              <Route path="/room/:id" element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <div className="app-container">
+                    <Navbar />
+                    <RoomDetail />
+                    <FloatingContact />
+                    <Footer />
+                  </div>
+                </Suspense>
+              } />
+              <Route path="/booking" element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <div className="app-container">
+                    <Navbar />
+                    <BookingPage />
+                    <FloatingContact />
+                    <Footer />
+                  </div>
+                </Suspense>
+              } />
+              <Route path="/guest-portal" element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <div className="app-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                    <Navbar />
+                    <div style={{ flex: 1, paddingTop: '100px', paddingBottom: '60px', background: 'var(--color-bg)' }}>
+                      <GuestPortal />
+                    </div>
+                    <Footer />
+                  </div>
+                </Suspense>
+              } />
+            </Routes>
+          </ErrorBoundary>
         </AuthProvider>
       </DataProvider>
     </Router>
