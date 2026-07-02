@@ -58,8 +58,8 @@ export default function PMSDashboard() {
     >
       <Link 
         to={to}
-        className="saas-card glass-panel hover-lift"
-        style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px', textDecoration: 'none', height: '100%' }}
+        className="pms-stat-card"
+        style={{ display: 'flex', alignItems: 'center', gap: '16px', textDecoration: 'none', height: '100%' }}
       >
         <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `rgba(${color}, 0.1)`, color: `rgb(${color})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon size={24} />
@@ -93,10 +93,10 @@ export default function PMSDashboard() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={exportAuditReport} className="saas-btn-outline" style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '14px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button onClick={exportAuditReport} className="pms-btn pms-btn-outline" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <FileText size={16} /> Audit Report
           </button>
-          <Link to="/admin/reservations" className="saas-btn">
+          <Link to="/admin/reservations" className="pms-btn pms-btn-primary" style={{ textDecoration: 'none' }}>
             <CalendarCheck size={16} /> New Booking
           </Link>
         </div>
@@ -125,7 +125,7 @@ export default function PMSDashboard() {
         {/* Revenue Chart */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-          className="saas-card"
+          className="pms-card" style={{ padding: '24px' }}
         >
           <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '24px' }}>Revenue Overview (Last 7 Days)</h3>
           <div style={{ height: '300px' }}>
@@ -153,7 +153,7 @@ export default function PMSDashboard() {
         {/* Action Items List */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
-          className="saas-card" style={{ display: 'flex', flexDirection: 'column' }}
+          className="pms-card" style={{ display: 'flex', flexDirection: 'column', padding: '24px' }}
         >
           <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '24px' }}>Booking Pipeline</h3>
           

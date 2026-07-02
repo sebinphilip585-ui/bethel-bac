@@ -51,10 +51,10 @@ export default function RoomStatusBoard() {
 
   return (
     <div>
-      <div className="pms-header">
+      <div className="pms-page-header">
         <div>
-          <h1 className="pms-header-title">Room Status Board</h1>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-gray-500)' }}>
+          <h1 className="pms-page-title">Room Status Board</h1>
+          <p className="pms-page-subtitle">
             Real-time room status, housekeeping coordination, and maintenance tracking
           </p>
         </div>
@@ -64,8 +64,8 @@ export default function RoomStatusBoard() {
       <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', flexWrap: 'wrap', alignItems: 'center' }}>
         <button
           onClick={() => setFilter('all')}
-          className={`btn btn-sm ${filter === 'all' ? 'btn-secondary' : 'btn-ghost'}`}
-          style={{ borderRadius: 'var(--radius-full)' }}
+          className={`pms-btn ${filter === 'all' ? 'pms-btn-primary' : 'pms-btn-outline'}`}
+          style={{ borderRadius: 'var(--pms-radius)' }}
         >
           All ({rooms.length})
         </button>
@@ -73,8 +73,8 @@ export default function RoomStatusBoard() {
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`btn btn-sm ${filter === s ? 'btn-secondary' : 'btn-ghost'}`}
-            style={{ borderRadius: 'var(--radius-full)' }}
+            className={`pms-btn ${filter === s ? 'pms-btn-primary' : 'pms-btn-outline'}`}
+            style={{ borderRadius: 'var(--pms-radius)' }}
           >
             <span style={{
               width: '8px', height: '8px', borderRadius: '50%',
@@ -174,17 +174,17 @@ export default function RoomStatusBoard() {
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {selectedRoom.currentStatus !== 'available' && (
-                  <button className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => handleUpdateStatus('available')}>
+                  <button className="pms-btn pms-btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => handleUpdateStatus('available')}>
                     <Sparkles size={14} /> Mark Clean & Available
                   </button>
                 )}
                 {selectedRoom.currentStatus !== 'cleaning' && selectedRoom.currentStatus !== 'occupied' && (
-                  <button className="btn btn-outline btn-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => handleUpdateStatus('cleaning')}>
+                  <button className="pms-btn pms-btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => handleUpdateStatus('cleaning')}>
                     <Sparkles size={14} /> Send to Cleaning (Dirty)
                   </button>
                 )}
                 {selectedRoom.currentStatus !== 'maintenance' && (
-                  <button className="btn btn-outline btn-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--color-error)' }} onClick={() => handleUpdateStatus('maintenance')}>
+                  <button className="pms-btn pms-btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--pms-danger)' }} onClick={() => handleUpdateStatus('maintenance')}>
                     <Wrench size={14} /> Place in Maintenance
                   </button>
                 )}
@@ -208,8 +208,8 @@ export default function RoomStatusBoard() {
                   </div>
                   
                   <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                    <button className="btn btn-primary btn-sm" style={{ flex: 1, padding: '4px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }} onClick={() => setInvoiceBookingId(selectedRoom.guest.id)}>
-                      <Eye size={12} /> Invoice
+                    <button className="pms-btn pms-btn-primary" style={{ flex: 1, padding: '8px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={() => setInvoiceBookingId(selectedRoom.guest.id)}>
+                      <Eye size={14} /> View Invoice
                     </button>
                   </div>
                 </div>
