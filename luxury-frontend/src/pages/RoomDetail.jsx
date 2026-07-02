@@ -34,14 +34,42 @@ export default function RoomDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
 
+  const FALLBACK_ROOMS = [
+    { id: '1', name: 'Beckingham', type: '2 BHK', price_per_night: 4500, images: ['/images/media__1782958486604.jpg'] },
+    { id: '2', name: 'Beverly Hills', type: '2 BHK', price_per_night: 4500, images: ['/images/media__1782958486624.jpg'] },
+    { id: '3', name: 'Belrose', type: '1 BHK', price_per_night: 2500, images: ['/images/media__1782958486674.jpg'] },
+    { id: '4', name: 'Blooms Bay', type: '2 BHK', price_per_night: 4500, images: ['/images/media__1782958486920.jpg'] },
+    { id: '5', name: 'Blue Bell', type: '1 BHK', price_per_night: 2500, images: ['/images/media__1782958486604.jpg'] },
+    { id: '6', name: 'Beehive', type: '1 BHK', price_per_night: 2500, images: ['/images/media__1782958486624.jpg'] },
+    { id: '7', name: 'Belarus', type: '3 BHK', price_per_night: 6500, images: ['/images/media__1782958486674.jpg'] },
+    { id: '8', name: 'Breeze Garden', type: '1 BHK', price_per_night: 2500, images: ['/images/media__1782958486920.jpg'] },
+    { id: '9', name: 'Brook Hills', type: '1 BHK', price_per_night: 2500, images: ['/images/media__1782958486604.jpg'] },
+    { id: '10', name: 'Bliss Heaven', type: '1 BHK', price_per_night: 2500, images: ['/images/media__1782958486624.jpg'] }
+  ];
+
   useEffect(() => {
     Promise.all([
-      fetch(`${API_BASE}/api/rooms/${id}`).then(r => r.json()),
-      fetch(`${API_BASE}/api/rooms`).then(r => r.json())
+      fetch(`${API_BASE}/api/rooms/${id}`).then(r => r.ok ? r.json() : null),
+      fetch(`${API_BASE}/api/rooms`).then(r => r.ok ? r.json() : null)
     ]).then(([roomData, allRooms]) => {
-      setRoom(roomData);
-      setRooms(allRooms.filter(r => r.id !== id).slice(0, 3));
-    }).catch(console.error).finally(() => setLoading(false));
+      let finalRoom = roomData;
+      let finalRooms = allRooms;
+
+      if (!finalRoom || finalRoom.error) {
+        finalRoom = FALLBACK_ROOMS.find(r => r.id === id) || FALLBACK_ROOMS[0];
+      }
+      if (!finalRooms || finalRooms.length === 0) {
+        finalRooms = FALLBACK_ROOMS;
+      }
+      
+      setRoom(finalRoom);
+      setRooms(finalRooms.filter(r => r.id !== finalRoom.id).slice(0, 3));
+    }).catch((err) => {
+      console.error('API failed, using fallback data:', err);
+      const fallbackRoom = FALLBACK_ROOMS.find(r => r.id === id) || FALLBACK_ROOMS[0];
+      setRoom(fallbackRoom);
+      setRooms(FALLBACK_ROOMS.filter(r => r.id !== fallbackRoom.id).slice(0, 3));
+    }).finally(() => setLoading(false));
     window.scrollTo(0, 0);
   }, [id]);
 
