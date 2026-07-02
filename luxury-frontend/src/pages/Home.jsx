@@ -1,5 +1,6 @@
 import React from 'react';
 import Hero from '../components/Hero';
+import Marquee from '../components/Marquee';
 import BookingEngine from '../components/BookingEngine';
 import AboutSection from '../components/AboutSection';
 import ApartmentsShowcase from '../components/ApartmentsShowcase';
@@ -13,6 +14,7 @@ export default function Home() {
   return (
     <div style={{ backgroundColor: 'var(--color-bg)' }}>
       <Hero />
+      <Marquee />
       <BookingEngine />
       <div id="about">
         <AboutSection />

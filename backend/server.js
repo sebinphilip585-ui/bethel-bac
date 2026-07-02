@@ -43,7 +43,8 @@ app.get('/api/availability', async (req, res) => {
     .select('id')
     .eq('room_id', roomId)
     .not('status', 'eq', 'cancelled')
-    .or(`and(check_in.lte.${checkOut},check_out.gte.${checkIn})`); // Overlap logic
+    .lte('check_in', checkOut)
+    .gte('check_out', checkIn);
 
   if (error) return res.status(500).json({ error: error.message });
 
@@ -77,7 +78,8 @@ app.post('/api/bookings', async (req, res) => {
       .select('id')
       .eq('room_id', roomId)
       .not('status', 'eq', 'cancelled')
-      .or(`and(check_in.lte.${checkOut},check_out.gte.${checkIn})`);
+      .lte('check_in', checkOut)
+      .gte('check_out', checkIn);
 
     if (conflictError) return res.status(500).json({ error: conflictError.message });
     if (conflicts.length > 0) return res.status(400).json({ error: 'Room is not available for these dates' });

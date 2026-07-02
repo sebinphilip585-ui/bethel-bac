@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 const images = [
+  '/images/media__1782958487848.jpg',
   '/images/media__1782958486604.jpg',
   '/images/media__1782958486624.jpg',
   '/images/media__1782958486674.jpg',
