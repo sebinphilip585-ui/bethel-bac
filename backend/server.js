@@ -52,11 +52,41 @@ app.get('/api/availability', async (req, res) => {
   res.json({ available: isAvailable });
 });
 
+// GET all bookings (Admin)
+app.get('/api/bookings', async (req, res) => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select(`
+      *,
+      room:rooms(*)
+    `)
+    .order('created_at', { ascending: false });
+    
+  if (error) return res.status(500).json({ error: error.message });
+  
+  // Format to match old PMS expectations
+  const formattedBookings = data.map(b => ({
+    ...b,
+    guest: {
+      name: b.guest_name,
+      email: b.guest_email,
+      phone: b.guest_phone,
+      id_type: 'Unknown',
+      id_number: b.identity_card || ''
+    },
+    roomType: b.room?.type || 'Standard',
+    payment_method: 'Pay at property',
+    payment_status: 'pending'
+  }));
+  
+  res.json(formattedBookings);
+});
+
 // POST create booking
 app.post('/api/bookings', async (req, res) => {
-  const { roomId, guestName, guestEmail, guestPhone, checkIn, checkOut } = req.body;
+  const { roomId, guestName, guestEmail, guestPhone, checkIn, checkOut, identityCard, cardDetails, checkInTime, checkOutTime } = req.body;
 
-  if (!roomId || !guestName || !guestEmail || !guestPhone || !checkIn || !checkOut) {
+  if (!roomId || !guestName || !guestEmail || !guestPhone || !checkIn || !checkOut || !identityCard || !cardDetails) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -94,6 +124,9 @@ app.post('/api/bookings', async (req, res) => {
 
     const totalPrice = diffDays * room.price_per_night;
 
+    // Mask card details for security (only keep last 4 digits)
+    const maskedCard = cardDetails.replace(/\D/g, '').slice(-4).padStart(16, '*');
+
     // 4. Create Booking
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
@@ -105,6 +138,10 @@ app.post('/api/bookings', async (req, res) => {
           guest_phone: guestPhone,
           check_in: checkIn,
           check_out: checkOut,
+          identity_card: identityCard,
+          card_details: maskedCard,
+          check_in_time: checkInTime || '14:00',
+          check_out_time: checkOutTime || '11:00',
           total_price: totalPrice,
           status: 'confirmed'
         }

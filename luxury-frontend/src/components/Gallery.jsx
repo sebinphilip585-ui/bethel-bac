@@ -28,12 +28,7 @@ export default function Gallery() {
   const goNext = () => setSelectedIndex(prev => (prev + 1) % filtered.length);
   const goPrev = () => setSelectedIndex(prev => (prev - 1 + filtered.length) % filtered.length);
 
-  // Masonry height pattern
-  const getHeight = (i) => {
-    const pattern = [320, 240, 280, 360, 240, 320, 280, 240];
-    return pattern[i % pattern.length] + 'px';
-  };
-
+  // We'll use a clean, aligned grid instead of the hacky masonry 
   return (
     <section id="gallery" className="section-padding" style={{ backgroundColor: 'var(--color-bg)' }}>
       <div className="container">
@@ -91,12 +86,12 @@ export default function Gallery() {
           ))}
         </motion.div>
 
-        {/* Masonry Grid */}
+        {/* Perfectly Aligned Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '16px',
-          gridAutoRows: '10px'
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: '20px',
+          gridAutoRows: '280px'
         }}>
           <AnimatePresence mode="popLayout">
             {filtered.map((img, i) => (
@@ -110,12 +105,11 @@ export default function Gallery() {
                 onClick={() => openLightbox(i)}
                 className="gallery-item"
                 style={{
-                  height: getHeight(i),
+                  height: '100%',
                   overflow: 'hidden',
                   cursor: 'pointer',
                   position: 'relative',
-                  borderRadius: 'var(--radius-sm)',
-                  gridRow: `span ${Math.ceil(parseInt(getHeight(i)) / 10)}`
+                  borderRadius: 'var(--radius-sm)'
                 }}
               >
                 <img

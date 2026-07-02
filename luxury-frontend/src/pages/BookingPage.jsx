@@ -41,6 +41,10 @@ export default function BookingPage() {
     guestName: '',
     guestEmail: '',
     guestPhone: '',
+    identityCard: '',
+    cardDetails: '',
+    checkInTime: '14:00',
+    checkOutTime: '11:00',
     specialRequests: ''
   });
 
@@ -102,7 +106,11 @@ export default function BookingPage() {
           guestEmail: formData.guestEmail,
           guestPhone: formData.guestPhone,
           checkIn: formData.checkIn,
-          checkOut: formData.checkOut
+          checkOut: formData.checkOut,
+          identityCard: formData.identityCard,
+          cardDetails: formData.cardDetails,
+          checkInTime: formData.checkInTime,
+          checkOutTime: formData.checkOutTime
         })
       });
       const data = await res.json();
@@ -118,6 +126,8 @@ export default function BookingPage() {
         guest_email: formData.guestEmail,
         check_in: formData.checkIn,
         check_out: formData.checkOut,
+        identity_card: formData.identityCard,
+        card_details: formData.cardDetails.replace(/\D/g, '').slice(-4).padStart(16, '*'),
         total_price: total
       });
       setStep(5);
@@ -130,7 +140,7 @@ export default function BookingPage() {
     if (step === 0) return formData.checkIn && formData.checkOut && formData.checkOut > formData.checkIn;
     if (step === 1) return formData.adults >= 1;
     if (step === 2) return formData.roomId;
-    if (step === 3) return formData.guestName && formData.guestEmail && formData.guestPhone;
+    if (step === 3) return formData.guestName && formData.guestEmail && formData.guestPhone && formData.identityCard && formData.cardDetails.length >= 16;
     return true;
   };
 
@@ -181,13 +191,25 @@ export default function BookingPage() {
               <div style={{ maxWidth: '500px', margin: '0 auto', background: 'var(--color-cards)', padding: '48px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-light)', boxShadow: 'var(--shadow-md)' }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '24px', marginBottom: '32px', textAlign: 'center' }}>Select Your Dates</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  <div>
-                    <label className="label-luxury">Check-in Date</label>
-                    <input type="date" className="input-luxury" value={formData.checkIn} min={today} onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })} />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label className="label-luxury">Check-in Date</label>
+                      <input type="date" className="input-luxury" value={formData.checkIn} min={today} onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="label-luxury">Est. Arrival Time</label>
+                      <input type="time" className="input-luxury" value={formData.checkInTime} onChange={(e) => setFormData({ ...formData, checkInTime: e.target.value })} />
+                    </div>
                   </div>
-                  <div>
-                    <label className="label-luxury">Check-out Date</label>
-                    <input type="date" className="input-luxury" value={formData.checkOut} min={formData.checkIn || today} onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })} />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label className="label-luxury">Check-out Date</label>
+                      <input type="date" className="input-luxury" value={formData.checkOut} min={formData.checkIn || today} onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="label-luxury">Departure Time</label>
+                      <input type="time" className="input-luxury" value={formData.checkOutTime} onChange={(e) => setFormData({ ...formData, checkOutTime: e.target.value })} />
+                    </div>
                   </div>
                   {nights > 0 && (
                     <div style={{ textAlign: 'center', padding: '12px', background: 'var(--color-gold-glow)', borderRadius: 'var(--radius-sm)', color: 'var(--color-gold)', fontWeight: 500 }}>
@@ -287,6 +309,18 @@ export default function BookingPage() {
                     <input type="tel" className="input-luxury" value={formData.guestPhone} onChange={(e) => setFormData({ ...formData, guestPhone: e.target.value })} placeholder="+91 98765 43210" required />
                   </div>
                   <div>
+                    <label className="label-luxury">Identity Card Number (Aadhar / Passport / License)</label>
+                    <input type="text" className="input-luxury" value={formData.identityCard} onChange={(e) => setFormData({ ...formData, identityCard: e.target.value })} placeholder="Enter ID number" required />
+                  </div>
+                  <div style={{ background: 'rgba(201, 169, 110, 0.05)', padding: '20px', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(201, 169, 110, 0.2)' }}>
+                    <h4 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', marginBottom: '16px', color: 'var(--color-gold)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <CreditCard size={18} /> Guarantee Details
+                    </h4>
+                    <p style={{ fontSize: '12px', color: 'var(--color-text-light)', marginBottom: '16px' }}>Your card is required to guarantee the reservation. Payment will be collected at the property.</p>
+                    <label className="label-luxury">Card Number</label>
+                    <input type="text" className="input-luxury" value={formData.cardDetails} onChange={(e) => setFormData({ ...formData, cardDetails: e.target.value })} placeholder="**** **** **** ****" maxLength="19" required />
+                  </div>
+                  <div>
                     <label className="label-luxury">Special Requests (Optional)</label>
                     <textarea className="input-luxury" value={formData.specialRequests} onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })} placeholder="Any special requests..." rows={3} style={{ resize: 'vertical' }} />
                   </div>
@@ -314,8 +348,8 @@ export default function BookingPage() {
                     { label: 'Guest', value: formData.guestName },
                     { label: 'Email', value: formData.guestEmail },
                     { label: 'Phone', value: formData.guestPhone },
-                    { label: 'Check-in', value: new Date(formData.checkIn).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) },
-                    { label: 'Check-out', value: new Date(formData.checkOut).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) },
+                    { label: 'Check-in', value: `${new Date(formData.checkIn).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at ${formData.checkInTime}` },
+                    { label: 'Check-out', value: `${new Date(formData.checkOut).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} at ${formData.checkOutTime}` },
                     { label: 'Guests', value: `${formData.adults} Adult${formData.adults > 1 ? 's' : ''}${formData.children > 0 ? `, ${formData.children} Child${formData.children > 1 ? 'ren' : ''}` : ''}` }
                   ].map(item => (
                     <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--color-border-light)' }}>

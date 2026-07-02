@@ -22,6 +22,10 @@ CREATE TABLE bookings (
   guest_phone TEXT NOT NULL,
   check_in DATE NOT NULL,
   check_out DATE NOT NULL,
+  check_in_time TEXT,
+  check_out_time TEXT,
+  identity_card TEXT,
+  card_details TEXT,
   total_price INTEGER NOT NULL,
   status TEXT NOT NULL DEFAULT 'confirmed', -- Can be 'confirmed', 'cancelled'
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
